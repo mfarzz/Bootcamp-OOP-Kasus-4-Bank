@@ -3,7 +3,7 @@
 namespace Bank.AccountType;
 
 public class SavingAccount(string accountNumber, string customerName, double balance)
-    : Account(accountNumber, customerName, balance)
+    : Account(accountNumber, customerName, balance), ITransferable
 {
     private const double MinBalance = 50000;
 
@@ -13,6 +13,19 @@ public class SavingAccount(string accountNumber, string customerName, double bal
 
     protected override bool CanWithdraw(double amount)
     {
-        return amount > 0 && Balance - amount >= MinBalance;
+        return amount > 0 && base.Balance - amount >= MinBalance;
     }
+
+    public bool TransferTo(Account destination, double amount)
+    {
+        if (!CanWithdraw(amount))
+        {
+            return false;
+        }
+        Balance -= amount;
+        PushTransaction("Transfer Out", amount, Balance);
+        destination.AcceptTransfer(amount);
+        return true;
+    }
+
 }
