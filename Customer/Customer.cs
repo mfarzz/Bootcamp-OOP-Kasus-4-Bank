@@ -13,11 +13,12 @@ public class Customer : Account
     {
         Name = customerName;
         
+        
     }
 
     public void AddAccount()
     {
-        for (int i; i <)
+        // for (int i; i <)
     }
 
     public override void ApplyEndMonth()
