@@ -1,21 +1,13 @@
 ﻿namespace Bank.Abstract;
 
-public abstract class Account
+public abstract class Account(string accountNumber, string customerName, double balance)
 {
-    private string accountNumber;
-    private string customerName;
-    private double balance;
-    private string[] history;
-    protected float MonthyInterest { get; }
-    protected double MonthlyFee { get; }
-
-    public Account(string accountNumber, string customerName, double balance)
-    {
-        this.accountNumber = accountNumber;
-        this.customerName = customerName;
-        this.balance = balance;
-        this.history = new string[10];
-    }
+    private string _accountNumber = accountNumber;
+    private string _customerName = customerName;
+    protected double Balance = balance;
+    private string[] _history = new string[10];
+    protected abstract double YearlyInterest { get; }
+    protected abstract double MonthlyFee { get; }
 
     public bool Deposit(double amount)
     {
@@ -38,7 +30,18 @@ public abstract class Account
     {
         // TODO
     }
-    
-    public abstract void ApplyEndMonth();
+
+    public void ApplyEndMonth()
+    {
+        double monthlyInterest = Balance *  (YearlyInterest / 12);
+        // Console.WriteLine($"interest: {monthlyInterest}\nFee: {MonthlyFee}");
+        Balance = Balance + monthlyInterest - MonthlyFee;
+    }
     protected abstract bool CanWithdraw(double amount);
+    
+    // testing
+    public double GetBalance()
+    {
+        return Balance;
+    }
 }

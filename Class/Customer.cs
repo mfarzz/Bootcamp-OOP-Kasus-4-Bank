@@ -17,7 +17,7 @@ public class Customer : Account
 
     public void AddAccount()
     {
-        for (int i; i <)
+        // for (int i; i <)
     }
 
     public override void ApplyEndMonth()
