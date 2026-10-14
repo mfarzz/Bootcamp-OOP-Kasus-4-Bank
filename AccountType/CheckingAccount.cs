@@ -7,7 +7,7 @@ public class CheckingAccount(string accountNumber, Customer customer, double bal
     : Account(accountNumber, customer, balance), ITransferable
 {
     private const double OverdraftLimit = -1000000;
-
+    public override string AccountType => "Checking";
 
     protected override double YearlyInterest => 0;
     protected override double MonthlyFee => 2000;

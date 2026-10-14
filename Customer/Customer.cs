@@ -6,13 +6,13 @@ public class Customer
 {
     private const int MaxAccounts = 5;
     public string Name { get; set; }
-    private Account[] accounts;
+    public Account[] Accounts {get; private set;}
     public int AccountCount { get; private set; }
     
     public Customer(string name)
     {
         Name = name;
-        this.accounts = new Account[MaxAccounts];
+        this.Accounts = new Account[MaxAccounts];
         AccountCount = 0;
     }
 
@@ -23,12 +23,12 @@ public class Customer
     
         for (int i = 0; i < AccountCount; i++)
         {
-            if (accounts[i].AccountNumber == account.AccountNumber)
+            if (Accounts[i].AccountNumber == account.AccountNumber)
             {
                 return false;
             }
         }
-        accounts[AccountCount] = account;
+        Accounts[AccountCount] = account;
         AccountCount++;
         return true;
     }
@@ -38,7 +38,7 @@ public class Customer
         double total = 0;
         for (int i = 0; i < AccountCount; i++)
         {
-            total += accounts[i].GetBalance();
+            total += Accounts[i].GetBalance();
         }
         return total;
     }
@@ -49,7 +49,7 @@ public class Customer
         Console.WriteLine("Daftar Rekening");
         for (int i = 0; i < AccountCount; i++)
         {
-            Account account = accounts[i];
+            Account account = Accounts[i];
             Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {Name}    |   Rp{account.GetBalance:NO}");
         }
     
@@ -60,7 +60,7 @@ public class Customer
     {
         for (int i = 0; i < AccountCount; i++)
         {
-            accounts[i].ApplyEndMonth();
+            Accounts[i].ApplyEndMonth();
         }
     }
 }

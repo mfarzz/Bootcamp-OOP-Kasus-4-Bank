@@ -3,12 +3,13 @@ using Bank.Class;
 
 namespace Bank.AccountType;
 
-public class TimeDepositAccount(string accountNumber, Customer customer, double balance, DateTime maturityDate)
+public class TimeDepositAccount(string accountNumber, Customer customer, double balance)
     : Account(accountNumber, customer, balance)
 {
     protected override double YearlyInterest => 0.06;
     protected override double MonthlyFee => 2000;
-    private readonly DateTime _maturityDate = maturityDate;
+    public override string AccountType => "Deposit";
+    private readonly DateTime _maturityDate = DateTime.Now.AddMonths(6);
     
     protected override bool CanWithdraw(double amount)
     {

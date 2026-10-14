@@ -1,4 +1,5 @@
-﻿using Bank.Abstract;
+﻿using System.Diagnostics.CodeAnalysis;
+using Bank.Abstract;
 using Bank.AccountType;
 using Bank.Class;
 
@@ -45,7 +46,7 @@ class Program
     private static void ShowMenu()
     {
         Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw");
-        Console.WriteLine("4. Print Mutation\n5. End Month Process\n0. Switch User");
+        Console.WriteLine("4. Print Mutation\n5. End Month Process\n6. Add Account\n0. Switch User");
         Console.Write("Select an option: ");
     }
 
