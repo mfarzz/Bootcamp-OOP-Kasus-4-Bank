@@ -25,3 +25,5 @@ Pembagian:
 * **Bagian B - Customer & Transaction:** data nasabah dan rekeningnya, transfer, riwayat transaksi, dan proses akhir bulan untuk semua rekening.
 
 Fitur Tambahan: biaya admin bulanan yang berbeda per jenis rekening.
+
+![ClassDiagram.jpeg](ClassDiagram.jpeg)
