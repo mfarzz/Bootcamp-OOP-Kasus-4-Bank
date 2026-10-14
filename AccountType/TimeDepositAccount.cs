@@ -1,9 +1,10 @@
 ﻿using Bank.Abstract;
+using Bank.Class;
 
 namespace Bank.AccountType;
 
-public class TimeDepositAccount(string accountNumber, string customerName, double balance, DateTime maturityDate)
-    : Account(accountNumber, customerName, balance)
+public class TimeDepositAccount(string accountNumber, Customer customer, double balance, DateTime maturityDate)
+    : Account(accountNumber, customer, balance)
 {
     protected override double YearlyInterest => 0.06;
     protected override double MonthlyFee => 2000;

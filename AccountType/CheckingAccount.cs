@@ -1,9 +1,10 @@
 ﻿using Bank.Abstract;
+using Bank.Class;
 
 namespace Bank.AccountType;
 
-public class CheckingAccount(string accountNumber, string customerName, double balance)
-    : Account(accountNumber, customerName, balance), ITransferable
+public class CheckingAccount(string accountNumber, Customer customer, double balance)
+    : Account(accountNumber, customer, balance), ITransferable
 {
     private const double OverdraftLimit = -1000000;
 
