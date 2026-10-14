@@ -2,11 +2,11 @@
 
 namespace Bank.Abstract;
 
-public abstract class Account(string accountNumber, string customerName, double balance)
+public abstract class Account(string accountNumber, Customer customer, double balance)
 {
     
     public string AccountNumber { get; } = accountNumber;
-    private string _customerName = customerName;
+    private Customer _customer = customer;
     protected double Balance = balance;
     private readonly Transaction[] _history = new Transaction[10];
     protected abstract double YearlyInterest { get; }
