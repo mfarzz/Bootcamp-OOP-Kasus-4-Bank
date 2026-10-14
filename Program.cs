@@ -1,14 +1,25 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Bank.Abstract;
 using Bank.AccountType;
 using Bank.Class;
+using Bank.Feature;
 
 namespace Bank;
 
 class Program
 {
+    static Features features = new Features();
+    
     static Customer c1 = new Customer("Abiem");
     static Customer c2 = new Customer("Fariz");
+
+    private SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
+    private CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
+    private TimeDepositAccount tda1 = new TimeDepositAccount("tda-01", c2, 10000000);
+    
+    private SavingAccount sa2 = new SavingAccount("sa-02", c2, 150000);
+    private CheckingAccount ca2 = new CheckingAccount("ca-02", c2, 800000);
+    private TimeDepositAccount tda2 = new TimeDepositAccount("tda-02", c2, 2000000);
     
     static void Main(string[] args)
     {
@@ -20,6 +31,13 @@ class Program
             switch (option)
             {
                 case "1":
+                    features.Profil(currentUser);
+                    break;
+                case "2":
+                    features.Deposit(currentUser);
+                    break;
+                case "3":
+                    features.Withdraw(currentUser);
                     break;
             }
         }

@@ -12,13 +12,13 @@ public class Customer
     public Customer(string name)
     {
         Name = name;
-        this.Accounts = new Account[MaxAccounts];
+        Accounts = new Account[MaxAccounts];
         AccountCount = 0;
     }
 
-    public bool AddAccount(Account account)
+    public bool AddAccount(Account? account)
     {
-        if (account is null) return false;
+        if (account == null) return false;
         if (AccountCount >= MaxAccounts) return false;
     
         for (int i = 0; i < AccountCount; i++)
@@ -33,7 +33,7 @@ public class Customer
         return true;
     }
 
-    public double GetTotalAssets()
+    private double GetTotalAssets()
     {
         double total = 0;
         for (int i = 0; i < AccountCount; i++)
@@ -47,13 +47,18 @@ public class Customer
     {
         Console.WriteLine($"Nasabah : {Name}");
         Console.WriteLine("Daftar Rekening");
+        if (AccountCount == 0)
+        {
+            Console.WriteLine("Tidak ada rekening yang terdaftar");
+            return;
+        }
         for (int i = 0; i < AccountCount; i++)
         {
             Account account = Accounts[i];
             Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {Name}    |   Rp{account.GetBalance:NO}");
         }
     
-        Console.WriteLine($"Total aset : Rp{GetTotalAssets():NO}");
+        Console.WriteLine($"Total aset : Rp{GetTotalAssets():N0}");
     }
 
     public void ApplyEndMonthAll()
