@@ -2,32 +2,68 @@
 
 namespace Bank.Class;
 
-public class Customer : Account
+public class Customer
 {
+    private const int MaxAccounts = 5;
     public string Name { get; set; }
-
-    private Account[] accounts = new Account[5];
+    private Account[] accounts;
+    public int AccountCount { get; private set; }
     
-    public Customer (string accountNumber, string customerName, double balance) 
-        : base(accountNumber, customerName, balance)
+    public Customer(string name)
     {
-        Name = customerName;
-        
-        
+        Name = name;
+        this.accounts = new Account[MaxAccounts];
+        AccountCount = 0;
     }
 
-    public void AddAccount()
-    {
-        // for (int i; i <)
-    }
+    // public bool AddAccount()
+    // {
+    //     if (accounts is null) return false;
+    //     if (AccountCount >= MaxAccounts) return false;
+    //
+    //     for (int i = 0; i < AccountCount; i++)
+    //     {
+    //         if (accounts[i].AccountNumber == accounts.AccountNumber)
+    //         {
+    //             return false;
+    //         }
+    //
+    //         accounts[AccountCount] = accounts;
+    //         AccountCount++;
+    //         return true;
+    //     }
+    //     
+    //     return true;
+    // }
 
-    public override void ApplyEndMonth()
-    {
-        throw new NotImplementedException();
-    }
+    // public double GetTotalAssets()
+    // {
+    //     double total = 0;
+    //     for (int i = 0; i < AccountCount; i++)
+    //     {
+    //         total += accounts[i].Balance;
+    //     }
+    //     return total;
+    // }
 
-    protected override bool CanWithdraw(double amount)
+    // public void PrintProfile()
+    // {
+    //     Console.WriteLine($"Nasabah : {Name}");
+    //     Console.WriteLine("Daftar Rekening");
+    //     for (int i = 0; i < AccountCount; i++)
+    //     {
+    //         Account account = accounts[i];
+    //         Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {account.GetType().Name}    |   Rp{account.Balance:NO}");
+    //     }
+    //
+    //     Console.WriteLine($"Total aset : Rp{GetTotalAssets():NO}");
+    // }
+
+    public void ApplyEndMonthAll()
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < AccountCount; i++)
+        {
+            accounts[i].ApplyEndMonth();
+        }
     }
 }

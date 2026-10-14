@@ -2,23 +2,23 @@
 
 public class Transaction
 {
-    public string Type { get; set; }
-    public decimal Amount { get; set; }
-    public decimal BalanceAfter { get; set; }
-    public DateTime DateTime { get; set; }
+    public string Type { get; }
+    public double Amount { get; }
+    public double BalanceAfter { get; }
+    public DateTime TransactionDate { get; }
 
-    public Transaction(string type, decimal amount, decimal balanceAfter)
+    public Transaction(string type, double amount, double balanceAfter)
     {
         Type = type;
         Amount = amount;
         BalanceAfter = balanceAfter;
-        DateTime = DateTime.Now;
+        TransactionDate = DateTime.Now;
     }
 
     public void PrintStatement()
     {
         Console.WriteLine(
-            $"{DateTime:dd/MM/yyyy HH:mm:ss} | " +
+            $"{TransactionDate:dd/MM/yyyy HH:mm:ss} | " +
             $"{Type,-12} | " +
             $"Amount: {Amount:N2} | " +
             $"Balance: {BalanceAfter:N2}"
