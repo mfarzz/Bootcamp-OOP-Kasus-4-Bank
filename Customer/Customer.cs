@@ -6,39 +6,39 @@ public class Customer
 {
     private const int MaxAccounts = 5;
     public string Name { get; set; }
-    private Account[] accounts;
+    public Account[] Accounts {get; private set;}
     public int AccountCount { get; private set; }
     
     public Customer(string name)
     {
         Name = name;
-        this.accounts = new Account[MaxAccounts];
+        Accounts = new Account[MaxAccounts];
         AccountCount = 0;
     }
 
-    public bool AddAccount(Account account)
+    public bool AddAccount(Account? account)
     {
-        if (account is null) return false;
+        if (account == null) return false;
         if (AccountCount >= MaxAccounts) return false;
     
         for (int i = 0; i < AccountCount; i++)
         {
-            if (accounts[i].AccountNumber == account.AccountNumber)
+            if (Accounts[i].AccountNumber == account.AccountNumber)
             {
                 return false;
             }
         }
-        accounts[AccountCount] = account;
+        Accounts[AccountCount] = account;
         AccountCount++;
         return true;
     }
 
-    public double GetTotalAssets()
+    private double GetTotalAssets()
     {
         double total = 0;
         for (int i = 0; i < AccountCount; i++)
         {
-            total += accounts[i].GetBalance();
+            total += Accounts[i].GetBalance();
         }
         return total;
     }
@@ -47,20 +47,25 @@ public class Customer
     {
         Console.WriteLine($"Nasabah : {Name}");
         Console.WriteLine("Daftar Rekening");
+        if (AccountCount == 0)
+        {
+            Console.WriteLine("Tidak ada rekening yang terdaftar");
+            return;
+        }
         for (int i = 0; i < AccountCount; i++)
         {
-            Account account = accounts[i];
+            Account account = Accounts[i];
             Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {Name}    |   Rp{account.GetBalance:NO}");
         }
     
-        Console.WriteLine($"Total aset : Rp{GetTotalAssets():NO}");
+        Console.WriteLine($"Total aset : Rp{GetTotalAssets():N0}");
     }
 
     public void ApplyEndMonthAll()
     {
         for (int i = 0; i < AccountCount; i++)
         {
-            accounts[i].ApplyEndMonth();
+            Accounts[i].ApplyEndMonth();
         }
     }
 }

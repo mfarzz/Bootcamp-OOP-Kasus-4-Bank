@@ -1,11 +1,12 @@
-﻿using Bank.Abstract;
-using Bank.AccountType;
-using Bank.Class;
+﻿using Bank.Class;
+using Bank.Feature;
 
 namespace Bank;
 
 class Program
 {
+    static Features features = new Features();
+    
     static Customer c1 = new Customer("Abiem");
     static Customer c2 = new Customer("Fariz");
     
@@ -19,6 +20,13 @@ class Program
             switch (option)
             {
                 case "1":
+                    features.Profil(currentUser);
+                    break;
+                case "2":
+                    features.Deposit(currentUser);
+                    break;
+                case "3":
+                    features.Withdraw(currentUser);
                     break;
             }
         }
