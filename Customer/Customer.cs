@@ -4,50 +4,54 @@ namespace Bank.Class;
 
 public class Customer
 {
-    private const int MaxAccounts = 5;
+    public string CustomerId { get; private set; }
     public string Name { get; set; }
-    public Account[] Accounts {get; private set;}
-    public int AccountCount { get; private set; }
-    
-    public Customer(string name)
+    private Account[] accounts = new Account[3];
+    private int accountCount;
+
+    public int TotalAssets
     {
+        get
+        {
+            int total = 0;
+            for (int i = 0; i < accountCount; i++)
+            {
+                // total += accounts[i].GetBalance(); // ganti tipe data dari get balance dulu
+            }
+            return total;
+        }
+    }
+
+    public Customer(string name, string customerId)
+    {
+        CustomerId = customerId;
         Name = name;
-        Accounts = new Account[MaxAccounts];
-        AccountCount = 0;
+        accountCount = 0;
     }
 
     public bool AddAccount(Account? account)
     {
         if (account == null) return false;
-        if (AccountCount >= MaxAccounts) return false;
+        
+        if (accountCount >= accounts.Length) return false;
     
-        for (int i = 0; i < AccountCount; i++)
+        for (int i = 0; i < accountCount; i++)
         {
-            if (Accounts[i].AccountNumber == account.AccountNumber)
+            if (accounts[i].AccountNumber == account.AccountNumber)
             {
                 return false;
             }
         }
-        Accounts[AccountCount] = account;
-        AccountCount++;
+        accounts[accountCount] = account;
+        accountCount++;
+        
         return true;
     }
-
-    private double GetTotalAssets()
-    {
-        double total = 0;
-        for (int i = 0; i < AccountCount; i++)
-        {
-            total += Accounts[i].GetBalance();
-        }
-        return total;
-    }
-
     public void PrintProfile()
     {
         Console.WriteLine($"Nasabah : {Name}");
         Console.WriteLine("Daftar Rekening");
-        if (AccountCount == 0)
+        if (accountCount == 0)
         {
             Console.WriteLine("Tidak ada rekening yang terdaftar");
             return;
@@ -56,14 +60,14 @@ public class Customer
         Console.WriteLine("-------------------------------------------------------");
         Console.WriteLine("No.  | No. Rekening      | Pemilik   | Saldo");
         Console.WriteLine("-------------------------------------------------------");
-        for (int i = 0; i < AccountCount; i++)
+        for (int i = 0; i < accountCount; i++)
         {
-            Account account = Accounts[i];
+            Account account = accounts[i];
             Console.WriteLine($"{i + 1, -4}. {account.AccountNumber, -17} | {Name, -9} | Rp. {account.GetBalance():N}");
         }
 
         Console.WriteLine("-------------------------------------------------------");
-        Console.WriteLine($"Total aset : Rp. {GetTotalAssets():N}");
+        Console.WriteLine($"Total aset : Rp. {TotalAssets:N}");
     }
     
 }
