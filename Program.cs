@@ -13,32 +13,71 @@ class Program
     static Customer c1 = new Customer("Abiem");
     static Customer c2 = new Customer("Fariz");
 
-    private SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
-    private CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
-    private TimeDepositAccount tda1 = new TimeDepositAccount("tda-01", c2, 10000000);
+    private static SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
+    private static CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
+    private static TimeDepositAccount tda1 = new TimeDepositAccount("tda-01", c2, 10000000);
     
-    private SavingAccount sa2 = new SavingAccount("sa-02", c2, 150000);
-    private CheckingAccount ca2 = new CheckingAccount("ca-02", c2, 800000);
-    private TimeDepositAccount tda2 = new TimeDepositAccount("tda-02", c2, 2000000);
+    private static SavingAccount sa2 = new SavingAccount("sa-02", c2, 150000);
+    private static CheckingAccount ca2 = new CheckingAccount("ca-02", c2, 800000);
+    private static TimeDepositAccount tda2 = new TimeDepositAccount("tda-02", c2, 2000000);
     
     static void Main(string[] args)
     {
-        Customer currentUser = PickUser();
+        c1.AddAccount(sa1);
+        c1.AddAccount(ca1);
+        c1.AddAccount(tda1);
+        
+        c2.AddAccount(sa2);
+        c2.AddAccount(ca2);
+        c2.AddAccount(tda2);
+
         while (true)
         {
-            ShowMenu();
-            var option = GetOption();
-            switch (option)
+            Console.Clear();
+            Customer currentUser = PickUser();
+            while (true)
             {
-                case "1":
-                    features.Profil(currentUser);
+                Console.Clear();
+                ShowMenu();
+                var option = GetOption();
+                Console.WriteLine("=============================");
+                switch (option)
+                {
+                    case "1":
+                        features.Profil(currentUser);
+                        break;
+                    case "2":
+                        features.Deposit(currentUser);
+                        break;
+                    case "3":
+                        features.Withdraw(currentUser);
+                        break;
+                    case "4":
+                        features.PrintMutation(currentUser);
+                        break;
+                    case "5":
+                        features.EndMonthProcess(currentUser);
+                        break;
+                    case "6":
+                        features.AddAccount(currentUser);
+                        break;
+                    case "0":
+                        break;
+                    case "x":
+                        Console.WriteLine("Thank you, have a nice day!");
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. (1-6)");
+                        break;
+                }
+
+                if (option == "0")
+                {
                     break;
-                case "2":
-                    features.Deposit(currentUser);
-                    break;
-                case "3":
-                    features.Withdraw(currentUser);
-                    break;
+                }
+
+                Console.WriteLine("===== Enter to continue =====");
+                Console.ReadLine();
             }
         }
     }
@@ -64,7 +103,8 @@ class Program
     private static void ShowMenu()
     {
         Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw");
-        Console.WriteLine("4. Print Mutation\n5. End Month Process\n6. Add Account\n0. Switch User");
+        Console.WriteLine("4. Print Mutation\n5. End Month Process\n" + 
+                          "6. Add Account\n0. Switch User\nx. Exit");
         Console.Write("Select an option: ");
     }
 

@@ -1,4 +1,6 @@
-﻿using Bank.Abstract;
+﻿using System.Text;
+using Bank.Abstract;
+using Bank.AccountType;
 using Bank.Class;
 
 namespace Bank.Feature;
@@ -37,6 +39,7 @@ public class Features
         double? amount = ReadAmount("Jumlah penarikan: Rp");
         if (amount == null) return;
 
+        // return bisa diganti string pesan error
         if (!account.Withdraw(amount.Value))
         {
             Console.WriteLine("Penarikan gagal. Saldo tidak mencukupi atau syarat rekening belum terpenuhi.");
@@ -45,7 +48,68 @@ public class Features
         
         Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp{account.GetBalance():N0}");
     }
+    
+    // Menu 4
+    public void PrintMutation(Customer customer)
+    {
+        Account? acc = PickAccount2(customer);
+        if (acc == null)
+        {
+            Console.WriteLine("Akun tidak ditemukan.");
+            return;
+        }
+        acc.PrintHistory();
+    }
+    
+    // Menu 5
+    public void EndMonthProcess(Customer customer)
+    {
+        var accounts =  customer.Accounts;
+        foreach (var acc in accounts)
+        {
+            acc?.ApplyEndMonth();
+        }
+    }
+    
+    // Menu 6
+    public void AddAccount(Customer customer)
+    {
+        if (customer.AccountCount == 5)
+        {
+            Console.WriteLine($"Jumlah akun mencapai maksimal: {customer.AccountCount}");
+            return;
+        }
+        var accountType = PickAccountType();
+        var accNumber = GenerateNumber(5);
+        var initialBalance = GetInputBalance();
 
+        Account acc;
+        
+        switch (accountType)
+        {
+            case Abstract.AccountType.Saving:
+                acc = new SavingAccount(accNumber, customer, initialBalance);
+                break;
+            case Abstract.AccountType.Checking:
+                acc = new CheckingAccount(accNumber, customer, initialBalance);
+                break;
+            case Abstract.AccountType.TimeDeposit:
+                acc = new TimeDepositAccount(accNumber, customer, initialBalance);
+                break;
+            default:
+                Console.WriteLine("Input Invalid");
+                return;
+        }
+
+        if (!customer.AddAccount(acc))
+        {
+            Console.WriteLine("Gagal membuat akun baru.");
+            return;
+        }
+        
+        Console.WriteLine($"Akun berhasil dibuat. Saldo : {initialBalance:N}");
+    }
+    
     private Account? PickAccount(Customer customer)
     {
         if (customer.AccountCount == 0)
@@ -82,5 +146,87 @@ public class Features
 
         Console.WriteLine("Jumlah tidak valid. Harus berupa angka lebih dari 0.");
         return null;
+    }
+    
+    private Account? PickAccount2(Customer customer)
+    {
+        var accounts = customer.Accounts;
+        while (true)
+        {
+            Console.WriteLine($"Rekening yang terdaftar: ");
+            for (var i = 0; i < customer.AccountCount; i++)
+            {
+                Console.WriteLine($"{i + 1}. {accounts[i].AccountNumber} | {accounts[i].AccountNumber} | {accounts[i].GetBalance():N}");
+            }
+            Console.Write("Pilihan: ");
+            var  input = Console.ReadLine();
+            var pickIndex = -1;
+            try
+            {
+                pickIndex = Convert.ToInt32(input) - 1;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Input invalid; Pilihan 1 - {customer.AccountCount}.");
+                continue;
+            }
+            if (pickIndex >= 0 && pickIndex < accounts.Length) return accounts[pickIndex];
+        }
+    }
+    
+    private Abstract.AccountType PickAccountType()
+    {
+        while (true)
+        {
+            Console.WriteLine("Pilih jenis rekening: ");
+            Console.WriteLine("1. Tabungan\n2. Giro\n3. Deposit");
+            Console.Write("Pilihan : ");
+            var input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    return Abstract.AccountType.Saving;
+                case "2":
+                    return Abstract.AccountType.Checking;
+                case "3":
+                    return Abstract.AccountType.TimeDeposit;
+                default:
+                    Console.WriteLine("Input invalid.");
+                    break;
+            }
+        }
+
+    }
+    
+    private string GenerateNumber(int length)
+    {
+        Random random = new Random();
+        StringBuilder result = new StringBuilder(length);
+        
+        for (int i = 0; i < length; i++)
+        {
+            // Generate random 1-9 digit
+            int digit = random.Next(0, 10);
+            result.Append(digit);
+        }
+        
+        return result.ToString();
+    }
+    
+    private int GetInputBalance()
+    {
+        while (true)
+        {
+            Console.Write("Saldo awal: ");
+            var input = Console.ReadLine();
+            try
+            {
+                return Convert.ToInt32(input);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Input invalid.");
+            }
+        }
     }
 }

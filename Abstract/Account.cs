@@ -43,7 +43,7 @@ public abstract class Account(string accountNumber, Customer customer, double ba
     {
         foreach (var transaction in _history)
         {
-            transaction.PrintStatement();
+            transaction?.PrintStatement();
         }
     }
 
@@ -57,8 +57,8 @@ public abstract class Account(string accountNumber, Customer customer, double ba
         PushTransaction("Monthly Fee", MonthlyFee, Balance);
         
         Console.WriteLine("==================================");
-        Console.WriteLine($"Monthly Update for : {AccountType} | {AccountNumber}");
-        Console.WriteLine($"OldBalance: {oldBalance}\nInterest: {monthlyInterest}\nFee: {MonthlyFee}\nBalance: {Balance}");
+        Console.WriteLine($"Monthly Update for : {_customer.Name} | {AccountType} | {AccountNumber}");
+        Console.WriteLine($"OldBalance: {oldBalance:N}\nInterest: {monthlyInterest:N}\nFee: {MonthlyFee:N}\nBalance: {Balance:N}");
     }
     protected abstract bool CanWithdraw(double amount);
     
