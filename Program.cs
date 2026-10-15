@@ -6,10 +6,9 @@ namespace Bank;
 
 class Program
 {
-    static Features features = new Features();
-    
     static Customer c1 = new Customer("Abiem");
     static Customer c2 = new Customer("Fariz");
+    static Customer[] allCustomers = { c1, c2 };
 
     private SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
     private CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
@@ -29,14 +28,16 @@ class Program
             switch (option)
             {
                 case "1":
-                    features.Profil(currentUser);
+                    Features.Profil(currentUser);
                     break;
                 case "2":
-                    features.Deposit(currentUser);
+                    Features.Deposit(currentUser);
                     break;
                 case "3":
-                    features.Withdraw(currentUser);
+                    Features.Withdraw(currentUser);
                     break;
+                case "4":
+                    Features.Transfer(currentUser, allCustomers);
             }
         }
     }
@@ -61,8 +62,8 @@ class Program
 
     private static void ShowMenu()
     {
-        Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw");
-        Console.WriteLine("4. Print Mutation\n5. End Month Process\n0. Switch User");
+        Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw \n4. Transfer");
+        Console.WriteLine("5. Print Mutation\n6. End Month Process\n0. Switch User");
         Console.Write("Select an option: ");
     }
 

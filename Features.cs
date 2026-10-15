@@ -6,13 +6,13 @@ namespace Bank.Feature;
 public class Features
 {
     // Menu 1
-    public void Profil(Customer customer)
+    public static void Profil(Customer customer)
     {
         customer.PrintProfile();
     }
 
     // Menu 2
-    public void Deposit(Customer customer)
+    public static void Deposit(Customer customer)
     {
         Account? account = PickAccount(customer);
         if (account == null) return;
@@ -29,7 +29,7 @@ public class Features
     }
 
     // Menu 3
-    public void Withdraw(Customer customer)
+    public static void Withdraw(Customer customer)
     {
         Account? account = PickAccount(customer);
         if (account == null) return;
@@ -46,7 +46,50 @@ public class Features
         Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp{account.GetBalance():N0}");
     }
 
-    private Account? PickAccount(Customer customer)
+    //Menu 4
+    public static void Transfer(Customer sender, Customer[] allCustomers)
+    {
+        Account? source = PickAccount(sender);
+        if (source == null) return;
+
+        if (source is not ITransferable transferable)
+        {
+            Console.WriteLine("Jenis rekening ini tidak mendukung metode transafer");
+            return;
+        }
+
+        Console.Write("Nomor Rekening Tujuan:   ");
+        string? destNumber = Console.ReadLine();
+        
+        var found = FindAccount(destNumber, allCustomers);
+        if (found == null)
+        {
+            Console.WriteLine("Rekening tujuan tidak ditemukan");
+            return;
+        }
+
+        (Account destination, Customer owner) = found.Value;
+
+        if (destination == source)
+        {
+            Console.WriteLine("Rekening tujuan tidak boleh sama dengan rekening asal");
+            return;
+        }
+        
+        double? ammount = ReadAmount("Jumlah transefer: Rp");
+        if(ammount == null) return;
+
+        if (!transferable.TransferTo(destination, ammount.Value))
+        {
+            Console.WriteLine("Transfer gagal. Saldo tidak mencukupi atau batas rekening terlampaui");
+            return;
+        } 
+        
+        Console.WriteLine($"Transfer Rp{ammount.Value:N} ke {owner.Name} ({destination.AccountNumber}) berhasil");
+        Console.WriteLine($"Saldo rekening asal sekarang: Rp{source.GetBalance():N}");
+    }
+
+    private static Account? PickAccount(Customer customer)
     {
         if (customer.AccountCount == 0)
         {
@@ -72,7 +115,7 @@ public class Features
         return null;
     }
 
-    private double? ReadAmount(string input)
+    private static double? ReadAmount(string input)
     {
         Console.Write(input);
         if (double.TryParse(Console.ReadLine(), out double amount) && amount > 0)
@@ -81,6 +124,23 @@ public class Features
         }
 
         Console.WriteLine("Jumlah tidak valid. Harus berupa angka lebih dari 0.");
+        return null;
+    }
+    
+    private static (Account, Customer)? FindAccount(string? accountNumber, Customer[] customers)
+    {
+        if (string.IsNullOrWhiteSpace(accountNumber)) return null;
+
+        foreach (Customer customer in customers)
+        {
+            for (int i = 0; i < customer.AccountCount; i++)
+            {
+                if (customer.Accounts[i].AccountNumber == accountNumber.Trim())
+                {
+                    return (customer.Accounts[i], customer);
+                }
+            }
+        }
         return null;
     }
 }
