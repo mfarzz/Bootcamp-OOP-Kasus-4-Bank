@@ -16,7 +16,7 @@ public class Customer
             int total = 0;
             for (int i = 0; i < accountCount; i++)
             {
-                // total += accounts[i].GetBalance(); // ganti tipe data dari get balance dulu
+                total += accounts[i].Balance; // ganti tipe data dari get balance dulu
             }
             return total;
         }
@@ -63,7 +63,7 @@ public class Customer
         for (int i = 0; i < accountCount; i++)
         {
             Account account = accounts[i];
-            Console.WriteLine($"{i + 1, -4}. {account.AccountNumber, -17} | {Name, -9} | Rp. {account.GetBalance():N}");
+            Console.WriteLine($"{i + 1, -4}. {account.AccountNumber, -17} | {Name, -9} | Rp. {Utils.FormatRupiah(account.Balance)}");
         }
 
         Console.WriteLine("-------------------------------------------------------");
