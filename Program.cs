@@ -91,7 +91,7 @@ class Program
     {
         while (true)
         {
-            Console.WriteLine($"Registered Customer:\n1. {c1.Name}\n2. {c2.Name}");
+            Console.WriteLine($"Registered Customer:\n1. {c1.Name}\n2. {c2.Name}\n3. Total Account");
             Console.Write("Pick user: ");
             var  input = Console.ReadLine();
             if (input == "1")
