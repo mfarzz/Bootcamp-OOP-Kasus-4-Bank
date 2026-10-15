@@ -2,5 +2,5 @@
 
 public interface ITransferable
 {
-    public bool TransferTo(Account destination, double amount);
+    public bool Transfer(Account target, int amount);
 }

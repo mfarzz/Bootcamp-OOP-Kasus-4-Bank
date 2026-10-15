@@ -12,13 +12,13 @@ class Program
     static Customer c2 = new Customer("Fariz", "CUST02");
     static Customer[] allCustomers = { c1, c2 };
 
-    private static SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
-    private static CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
-    private static TimeDepositAccount tda1 = new TimeDepositAccount("tda-01", c1, 10000000);
+    private static Saving sa1 = new Saving("sa-01", c1, 200000);
+    private static Checking ca1 = new Checking("ca-01", c1, 1500000);
+    private static TimeDeposit tda1 = new TimeDeposit("tda-01", c1, 10000000);
     
-    private static SavingAccount sa2 = new SavingAccount("sa-02", c2, 150000);
-    private static CheckingAccount ca2 = new CheckingAccount("ca-02", c2, 800000);
-    private static TimeDepositAccount tda2 = new TimeDepositAccount("tda-02", c2, 2000000);
+    private static Saving sa2 = new Saving("sa-02", c2, 150000);
+    private static Checking ca2 = new Checking("ca-02", c2, 800000);
+    private static TimeDeposit tda2 = new TimeDeposit("tda-02", c2, 2000000);
     
     static void Main(string[] args)
     {

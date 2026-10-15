@@ -148,13 +148,13 @@ public class Features
         switch (accountType)
         {
             case Abstract.AccountType.Saving:
-                acc = new SavingAccount(accNumber, customer, initialBalance);
+                acc = new Saving(accNumber, customer, initialBalance);
                 break;
             case Abstract.AccountType.Checking:
-                acc = new CheckingAccount(accNumber, customer, initialBalance);
+                acc = new Checking(accNumber, customer, initialBalance);
                 break;
             case Abstract.AccountType.TimeDeposit:
-                acc = new TimeDepositAccount(accNumber, customer, initialBalance);
+                acc = new TimeDeposit(accNumber, customer, initialBalance);
                 break;
             default:
                 Console.WriteLine("Input Invalid");

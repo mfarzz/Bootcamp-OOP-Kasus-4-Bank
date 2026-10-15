@@ -69,4 +69,9 @@ public abstract class Account(string accountNumber, string customerName, int bal
             Console.WriteLine(transaction);
         }
     }
+
+    public virtual void Info()
+    {
+        Console.WriteLine($"Pemilik: {OwnerName} | {AccountNumber} |  Saldo : {Utils.FormatRupiah(Balance)}");
+    }
 }
