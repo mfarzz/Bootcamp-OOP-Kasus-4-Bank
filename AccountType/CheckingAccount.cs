@@ -10,11 +10,18 @@ public class CheckingAccount(string accountNumber, Customer customer, double bal
     public override string AccountType => "Checking";
 
     protected override double YearlyInterest => 0;
-    protected override double MonthlyFee => 2000;
+    protected override double MonthlyFee => 25000;
     
 
     protected override bool CanWithdraw(double amount)
     {
+        if (Balance - amount < OverdraftLimit)
+        {
+            Console.WriteLine($"Penarikan melebihi limit overdraft : Rp. {OverdraftLimit}");
+        } else if (amount <= 0)
+        {
+            Console.WriteLine("Nominal harus lebih besar dari 0.");
+        }
         return Balance - amount >= OverdraftLimit && amount > 0;
     }
 

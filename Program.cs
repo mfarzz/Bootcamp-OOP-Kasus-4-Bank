@@ -29,6 +29,9 @@ class Program
         c2.AddAccount(sa2);
         c2.AddAccount(ca2);
         c2.AddAccount(tda2);
+        
+        // Coba atur saldo dari luar kelas
+        // c1.Accounts[0].Balance = 20000;
 
         while (true)
         {
@@ -69,7 +72,7 @@ class Program
                         Console.WriteLine("Thank you, have a nice day!");
                         return;
                     default:
-                        Console.WriteLine("Invalid option. (1-6)");
+                        Console.WriteLine("Opsi Invalid.");
                         break;
                 }
 

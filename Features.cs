@@ -19,7 +19,7 @@ public class Features
         Account? account = PickAccount(customer);
         if (account == null) return;
 
-        double? amount = ReadAmount("Jumlah deposit: Rp");
+        double? amount = ReadAmount("Jumlah deposit: Rp ");
         if (amount == null) return;
 
         if (!account.Deposit(amount.Value))
@@ -27,7 +27,7 @@ public class Features
             Console.WriteLine("Deposit gagal.");
             return;
         }
-        Console.WriteLine($"Deposit berhasil. Saldo sekarang: Rp{account.GetBalance():N0}");
+        Console.WriteLine($"Deposit berhasil. Saldo sekarang: Rp. {account.GetBalance():N}");
     }
 
     // Menu 3
@@ -36,17 +36,17 @@ public class Features
         Account? account = PickAccount(customer);
         if (account == null) return;
 
-        double? amount = ReadAmount("Jumlah penarikan: Rp");
+        double? amount = ReadAmount("Jumlah penarikan: Rp ");
         if (amount == null) return;
 
         // return bisa diganti string pesan error
         if (!account.Withdraw(amount.Value))
         {
-            Console.WriteLine("Penarikan gagal. Saldo tidak mencukupi atau syarat rekening belum terpenuhi.");
+            Console.WriteLine("Penarikan gagal.");
             return;
         }
         
-        Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp{account.GetBalance():N0}");
+        Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp. {account.GetBalance():N}");
     }
     
     //Menu 4
@@ -112,7 +112,7 @@ public class Features
     // Menu 5
     public void PrintMutation(Customer customer)
     {
-        Account? acc = PickAccount2(customer);
+        Account? acc = PickAccount(customer);
         if (acc == null)
         {
             Console.WriteLine("Akun tidak ditemukan.");
@@ -142,6 +142,7 @@ public class Features
         var accountType = PickAccountType();
         var accNumber = GenerateNumber(5);
         var initialBalance = GetInputBalance();
+
         Account acc;
         
         switch (accountType)
@@ -168,8 +169,7 @@ public class Features
         
         Console.WriteLine($"Akun berhasil dibuat. Saldo : {initialBalance:N}");
     }
-        
-
+    
     private Account? PickAccount(Customer customer)
     {
         if (customer.AccountCount == 0)
@@ -182,7 +182,7 @@ public class Features
         for (int i = 0; i < customer.AccountCount; i++)
         {
             Account acc = customer.Accounts[i];
-            Console.WriteLine($"    {i + 1}. {acc.AccountNumber} | Rp{acc.GetBalance():N}");
+            Console.WriteLine($"    {i + 1}. {acc.AccountNumber} | Rp. {acc.GetBalance():N}");
         }
 
         Console.Write("Nomor rekening: ");
@@ -223,32 +223,6 @@ public class Features
             }
         }
         return null;
-    }
-    
-    private Account? PickAccount2(Customer customer)
-    {
-        var accounts = customer.Accounts;
-        while (true)
-        {
-            Console.WriteLine($"Rekening yang terdaftar: ");
-            for (var i = 0; i < customer.AccountCount; i++)
-            {
-                Console.WriteLine($"{i + 1}. {accounts[i].AccountNumber} | {accounts[i].AccountNumber} | {accounts[i].GetBalance():N}");
-            }
-            Console.Write("Pilihan: ");
-            var  input = Console.ReadLine();
-            var pickIndex = -1;
-            try
-            {
-                pickIndex = Convert.ToInt32(input) - 1;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Input invalid; Pilihan 1 - {customer.AccountCount}.");
-                continue;
-            }
-            if (pickIndex >= 0 && pickIndex < accounts.Length) return accounts[pickIndex];
-        }
     }
     
     private Abstract.AccountType PickAccountType()

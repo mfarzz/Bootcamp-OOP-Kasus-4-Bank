@@ -59,10 +59,11 @@ public class Customer
         for (int i = 0; i < AccountCount; i++)
         {
             Account account = Accounts[i];
-            Console.WriteLine($"{i + 1, -4}. {account.AccountNumber, -17} | {Name, -9} | Rp{account.GetBalance():N}");
+            Console.WriteLine($"{i + 1, -4}. {account.AccountNumber, -17} | {Name, -9} | Rp. {account.GetBalance():N}");
         }
 
         Console.WriteLine("-------------------------------------------------------");
-        Console.WriteLine($"Total aset : Rp{GetTotalAssets():N}");
+        Console.WriteLine($"Total aset : Rp {GetTotalAssets():N}");
     }
+    
 }
