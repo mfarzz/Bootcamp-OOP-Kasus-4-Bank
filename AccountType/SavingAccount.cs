@@ -10,11 +10,18 @@ public class SavingAccount(string accountNumber, Customer customer, double balan
     public override string AccountType => "Saving";
     protected override double YearlyInterest => 0.02;
 
-    protected override double MonthlyFee => 2000;
+    protected override double MonthlyFee => 5000;
 
     protected override bool CanWithdraw(double amount)
     {
-        return amount > 0 && base.Balance - amount >= MinBalance;
+        if (amount <= 0)
+        {
+            Console.WriteLine("Nominal harus lebih besar dari 0");
+        } else if (Balance - amount < MinBalance)
+        {
+            Console.WriteLine($"Saldo minimal: Rp. {MinBalance:N}");
+        }
+        return amount > 0 && Balance - amount >= MinBalance;
     }
 
     public bool TransferTo(Account destination, double amount)

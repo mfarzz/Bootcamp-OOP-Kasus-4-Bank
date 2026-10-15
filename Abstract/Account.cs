@@ -6,7 +6,7 @@ public abstract class Account(string accountNumber, Customer customer, double ba
 {
     
     public string AccountNumber { get; } = accountNumber;
-    private Customer _customer = customer;
+    private readonly Customer _customer = customer;
     protected double Balance = balance;
     private readonly Transaction[] _history = new Transaction[10];
     protected abstract double YearlyInterest { get; }
@@ -57,8 +57,9 @@ public abstract class Account(string accountNumber, Customer customer, double ba
         PushTransaction("Monthly Fee", MonthlyFee, Balance);
         
         Console.WriteLine("==================================");
-        Console.WriteLine($"Monthly Update for : {_customer.Name} | {AccountType} | {AccountNumber}");
-        Console.WriteLine($"OldBalance: {oldBalance:N}\nInterest: {monthlyInterest:N}\nFee: {MonthlyFee:N}\nBalance: {Balance:N}");
+        Console.WriteLine($"Update bulanan untuk : {_customer.Name} | {AccountType} | {AccountNumber}");
+        Console.WriteLine($"Saldo awal: Rp. {oldBalance:N}\nBunga: Rp. {monthlyInterest:N}\n"+
+                          $"Biaya admin: Rp. {MonthlyFee:N}\nSaldo Baru: Rp. {Balance:N}");
     }
     protected abstract bool CanWithdraw(double amount);
     

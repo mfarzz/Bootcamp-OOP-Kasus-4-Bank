@@ -15,7 +15,7 @@ class Program
 
     private static SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
     private static CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
-    private static TimeDepositAccount tda1 = new TimeDepositAccount("tda-01", c2, 10000000);
+    private static TimeDepositAccount tda1 = new TimeDepositAccount("tda-01", c1, 10000000);
     
     private static SavingAccount sa2 = new SavingAccount("sa-02", c2, 150000);
     private static CheckingAccount ca2 = new CheckingAccount("ca-02", c2, 800000);
@@ -30,6 +30,9 @@ class Program
         c2.AddAccount(sa2);
         c2.AddAccount(ca2);
         c2.AddAccount(tda2);
+        
+        // Coba atur saldo dari luar kelas
+        // c1.Accounts[0].Balance = 20000;
 
         while (true)
         {
@@ -67,7 +70,7 @@ class Program
                         Console.WriteLine("Thank you, have a nice day!");
                         return;
                     default:
-                        Console.WriteLine("Invalid option. (1-6)");
+                        Console.WriteLine("Opsi Invalid.");
                         break;
                 }
 

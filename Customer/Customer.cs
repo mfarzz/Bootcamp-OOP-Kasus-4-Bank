@@ -55,17 +55,9 @@ public class Customer
         for (int i = 0; i < AccountCount; i++)
         {
             Account account = Accounts[i];
-            Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {Name}    |   Rp{account.GetBalance():N}");
+            Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {Name}    |   Rp. {account.GetBalance():N}");
         }
     
-        Console.WriteLine($"Total aset : Rp{GetTotalAssets():N}");
-    }
-
-    public void ApplyEndMonthAll()
-    {
-        for (int i = 0; i < AccountCount; i++)
-        {
-            Accounts[i].ApplyEndMonth();
-        }
+        Console.WriteLine($"Total aset : Rp. {GetTotalAssets():N}");
     }
 }
