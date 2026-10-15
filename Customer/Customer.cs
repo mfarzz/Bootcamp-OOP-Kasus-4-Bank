@@ -60,7 +60,7 @@ public class Customer
             Console.WriteLine($"    {i + 1}. {account.AccountNumber}    |   {Name}    |   Rp{account.GetBalance():N}");
         }
     
-        Console.WriteLine($"Total aset : Rp{GetTotalAssets():N0}");
+        Console.WriteLine($"Total aset : Rp{GetTotalAssets():N}");
     }
 
     public void ApplyEndMonthAll()

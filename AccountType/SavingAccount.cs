@@ -7,7 +7,7 @@ public class SavingAccount(string accountNumber, Customer customer, double balan
     : Account(accountNumber, customer, balance), ITransferable
 {
     private const double MinBalance = 50000;
-
+    public override string AccountType => "Saving";
     protected override double YearlyInterest => 0.02;
 
     protected override double MonthlyFee => 2000;

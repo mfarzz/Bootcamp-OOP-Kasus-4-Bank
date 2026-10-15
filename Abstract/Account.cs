@@ -11,6 +11,7 @@ public abstract class Account(string accountNumber, Customer customer, double ba
     private readonly Transaction[] _history = new Transaction[10];
     protected abstract double YearlyInterest { get; }
     protected abstract double MonthlyFee { get; }
+    public abstract string AccountType { get; }
 
     public bool Deposit(double amount)
     {
@@ -42,15 +43,22 @@ public abstract class Account(string accountNumber, Customer customer, double ba
     {
         foreach (var transaction in _history)
         {
-            transaction.PrintStatement();
+            transaction?.PrintStatement();
         }
     }
 
     public void ApplyEndMonth()
     {
+        var oldBalance = Balance;
         double monthlyInterest = Balance *  (YearlyInterest / 12);
-        // Console.WriteLine($"interest: {monthlyInterest}\nFee: {MonthlyFee}");
-        Balance = Balance + monthlyInterest - MonthlyFee;
+        Balance += monthlyInterest;
+        PushTransaction("Monthly Interest", monthlyInterest, Balance);
+        Balance -= MonthlyFee;
+        PushTransaction("Monthly Fee", MonthlyFee, Balance);
+        
+        Console.WriteLine("==================================");
+        Console.WriteLine($"Monthly Update for : {_customer.Name} | {AccountType} | {AccountNumber}");
+        Console.WriteLine($"OldBalance: {oldBalance:N}\nInterest: {monthlyInterest:N}\nFee: {MonthlyFee:N}\nBalance: {Balance:N}");
     }
     protected abstract bool CanWithdraw(double amount);
     

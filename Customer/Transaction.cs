@@ -20,8 +20,8 @@ public class Transaction
         Console.WriteLine(
             $"{TransactionDate:dd/MM/yyyy HH:mm:ss} | " +
             $"{Type,-12} | " +
-            $"Amount: {Amount:N2} | " +
-            $"Balance: {BalanceAfter:N2}"
+            $"Amount: {Amount:N} | " +
+            $"Balance: {BalanceAfter:N}"
         );
     }
 }
