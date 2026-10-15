@@ -8,8 +8,8 @@ class Program
 {
     static Features features = new Features();
     
-    static Customer c1 = new Customer("Abiem");
-    static Customer c2 = new Customer("Fariz");
+    static Customer c1 = new Customer("Abiem", "CUST01");
+    static Customer c2 = new Customer("Fariz", "CUST02");
     static Customer[] allCustomers = { c1, c2 };
 
     private static SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
