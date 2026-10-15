@@ -63,7 +63,7 @@ public class Customer
         }
 
         Console.WriteLine("-------------------------------------------------------");
-        Console.WriteLine($"Total aset : Rp {GetTotalAssets():N}");
+        Console.WriteLine($"Total aset : Rp. {GetTotalAssets():N}");
     }
     
 }

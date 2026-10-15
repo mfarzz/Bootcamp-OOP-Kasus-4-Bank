@@ -4,11 +4,11 @@ namespace Bank.Abstract;
 
 public abstract class Account(string accountNumber, Customer customer, double balance)
 {
-    
+    private static readonly int MaxHistory = 10;
     public string AccountNumber { get; } = accountNumber;
     private readonly Customer _customer = customer;
     protected double Balance = balance;
-    private readonly Transaction[] _history = new Transaction[10];
+    private readonly Transaction[] _history = new Transaction[Account.MaxHistory];
     protected abstract double YearlyInterest { get; }
     protected abstract double MonthlyFee { get; }
     public abstract string AccountType { get; }
@@ -63,7 +63,6 @@ public abstract class Account(string accountNumber, Customer customer, double ba
     }
     protected abstract bool CanWithdraw(double amount);
     
-    // testing
     public double GetBalance()
     {
         return Balance;
