@@ -52,42 +52,59 @@ public class Features
     //Menu 4
     public void Transfer(Customer sender, Customer[] allCustomers)
     {
-        Account? source = PickAccount(sender);
-        if (source == null) return;
-
-        if (source is not ITransferable transferable)
+        Account? source;
+        ITransferable transferable;
+            
+        while (true)
         {
-            Console.WriteLine("Jenis rekening ini tidak mendukung metode transafer");
-            return;
+            source =  PickAccount(sender);
+            if (source == null) return;
+            if (source is  ITransferable t)
+            {
+                transferable = t;
+                break;
+            }
+            Console.WriteLine("Jenis rekening ini tidak mendukung metode transfer.");
+            Console.WriteLine("Silakan pilih rekening lain.\n");
         }
 
-        Console.Write("Nomor Rekening Tujuan:   ");
-        string? destNumber = Console.ReadLine();
+        (Account destination, Customer owner) foundAccount;
+
+        while (true)
+        {
+            Console.Write("Nomor Rekening Tujuan: ");
+            string? destNumber = Console.ReadLine();
+            
+            var found = FindAccount(destNumber, allCustomers);
+            if (found == null)
+            {
+                Console.WriteLine("Rekening tujuan tidak ditemukan");
+                Console.WriteLine("Silahkan inputkan kembali \n");
+                continue;
+            }
+            
+            if (found.Value.Item1 == source)
+            {
+                Console.WriteLine("Rekening tujuan tidak boleh sama dengan rekening asal");
+                Console.WriteLine("Silahkan inputkan kembali \n");
+                continue;
+            }
+            foundAccount = found.Value;
+            break;
+        }
+
+        (Account destination, Customer owner) = foundAccount;
         
-        var found = FindAccount(destNumber, allCustomers);
-        if (found == null)
-        {
-            Console.WriteLine("Rekening tujuan tidak ditemukan");
-            return;
-        }
-
-        (Account destination, Customer owner) = found.Value;
-
-        if (destination == source)
-        {
-            Console.WriteLine("Rekening tujuan tidak boleh sama dengan rekening asal");
-            return;
-        }
-        
-        double? ammount = ReadAmount("Jumlah transefer: Rp");
+        double? ammount = ReadAmount("Jumlah transefer: Rp ");
         if(ammount == null) return;
 
         if (!transferable.TransferTo(destination, ammount.Value))
         {
             Console.WriteLine("Transfer gagal. Saldo tidak mencukupi atau batas rekening terlampaui");
             return;
-        } 
-        
+        }
+
+        Console.WriteLine("===========BUKTI TRANSFER==========");
         Console.WriteLine($"Transfer Rp{ammount.Value:N} ke {owner.Name} ({destination.AccountNumber}) berhasil");
         Console.WriteLine($"Saldo rekening asal sekarang: Rp{source.GetBalance():N}");
     }
@@ -168,7 +185,7 @@ public class Features
             Console.WriteLine($"    {i + 1}. {acc.AccountNumber} | Rp{acc.GetBalance():N}");
         }
 
-        Console.Write("Nomor rekening (urutan): ");
+        Console.Write("Nomor rekening: ");
         if (int.TryParse(Console.ReadLine(), out int index)
             && index >= 1 && index <= customer.AccountCount)
         {
