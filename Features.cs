@@ -247,7 +247,7 @@ public class Features
         return result.ToString();
     }
     
-    private int GetInputBalance()
+    private double GetInputBalance()
     {
         while (true)
         {
@@ -255,7 +255,7 @@ public class Features
             var input = Console.ReadLine();
             try
             {
-                return Convert.ToInt32(input);
+                return Convert.ToDouble(input);
             }
             catch (Exception e)
             {
