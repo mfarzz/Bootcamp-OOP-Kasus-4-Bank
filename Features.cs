@@ -46,10 +46,53 @@ public class Features
             return;
         }
         
-        Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp. {account.GetBalance():N0}");
+        Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp. {account.GetBalance():N}");
     }
     
-    // Menu 4
+    //Menu 4
+    public void Transfer(Customer sender, Customer[] allCustomers)
+    {
+        Account? source = PickAccount(sender);
+        if (source == null) return;
+
+        if (source is not ITransferable transferable)
+        {
+            Console.WriteLine("Jenis rekening ini tidak mendukung metode transafer");
+            return;
+        }
+
+        Console.Write("Nomor Rekening Tujuan:   ");
+        string? destNumber = Console.ReadLine();
+        
+        var found = FindAccount(destNumber, allCustomers);
+        if (found == null)
+        {
+            Console.WriteLine("Rekening tujuan tidak ditemukan");
+            return;
+        }
+
+        (Account destination, Customer owner) = found.Value;
+
+        if (destination == source)
+        {
+            Console.WriteLine("Rekening tujuan tidak boleh sama dengan rekening asal");
+            return;
+        }
+        
+        double? ammount = ReadAmount("Jumlah transefer: Rp");
+        if(ammount == null) return;
+
+        if (!transferable.TransferTo(destination, ammount.Value))
+        {
+            Console.WriteLine("Transfer gagal. Saldo tidak mencukupi atau batas rekening terlampaui");
+            return;
+        } 
+        
+        Console.WriteLine($"Transfer Rp{ammount.Value:N} ke {owner.Name} ({destination.AccountNumber}) berhasil");
+        Console.WriteLine($"Saldo rekening asal sekarang: Rp{source.GetBalance():N}");
+    }
+    
+    // Menu 5
     public void PrintMutation(Customer customer)
     {
         Account? acc = PickAccount(customer);
@@ -61,7 +104,7 @@ public class Features
         acc.PrintHistory();
     }
     
-    // Menu 5
+    // Menu 6
     public void EndMonthProcess(Customer customer)
     {
         var accounts =  customer.Accounts;
@@ -71,7 +114,7 @@ public class Features
         }
     }
     
-    // Menu 6
+    // Menu 7
     public void AddAccount(Customer customer)
     {
         if (customer.AccountCount == 5)
@@ -107,7 +150,7 @@ public class Features
             return;
         }
         
-        Console.WriteLine($"Akun berhasil dibuat. Saldo : Rp. {initialBalance:N}");
+        Console.WriteLine($"Akun berhasil dibuat. Saldo : {initialBalance:N}");
     }
     
     private Account? PickAccount(Customer customer)
@@ -145,6 +188,23 @@ public class Features
         }
 
         Console.WriteLine("Jumlah tidak valid. Harus berupa angka lebih dari 0.");
+        return null;
+    }
+    
+    private (Account, Customer)? FindAccount(string? accountNumber, Customer[] customers)
+    {
+        if (string.IsNullOrWhiteSpace(accountNumber)) return null;
+
+        foreach (Customer customer in customers)
+        {
+            for (int i = 0; i < customer.AccountCount; i++)
+            {
+                if (customer.Accounts[i].AccountNumber == accountNumber.Trim())
+                {
+                    return (customer.Accounts[i], customer);
+                }
+            }
+        }
         return null;
     }
     

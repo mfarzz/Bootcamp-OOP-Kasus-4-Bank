@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using Bank.Abstract;
 using Bank.AccountType;
 using Bank.Class;
 using Bank.Feature;
@@ -12,6 +10,7 @@ class Program
     
     static Customer c1 = new Customer("Abiem");
     static Customer c2 = new Customer("Fariz");
+    static Customer[] allCustomers = { c1, c2 };
 
     private static SavingAccount sa1 = new SavingAccount("sa-01", c1, 200000);
     private static CheckingAccount ca1 = new CheckingAccount("ca-01", c1, 1500000);
@@ -56,12 +55,15 @@ class Program
                         features.Withdraw(currentUser);
                         break;
                     case "4":
-                        features.PrintMutation(currentUser);
+                        features.Transfer(currentUser, allCustomers);
                         break;
                     case "5":
-                        features.EndMonthProcess(currentUser);
+                        features.PrintMutation(currentUser);
                         break;
                     case "6":
+                        features.EndMonthProcess(currentUser);
+                        break;
+                    case "7":
                         features.AddAccount(currentUser);
                         break;
                     case "0":
@@ -105,9 +107,9 @@ class Program
 
     private static void ShowMenu()
     {
-        Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw");
-        Console.WriteLine("4. Print Mutation\n5. End Month Process\n" + 
-                          "6. Add Account\n0. Switch User\nx. Exit");
+        Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw \n4. Transfer");
+        Console.WriteLine("5. Print Mutation\n6. End Month Process\n" + 
+                          "7. Add Account\n0. Switch User\nx. Exit");
         Console.Write("Select an option: ");
     }
 
