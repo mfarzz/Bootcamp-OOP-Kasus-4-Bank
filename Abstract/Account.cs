@@ -2,75 +2,71 @@
 
 namespace Bank.Abstract;
 
-public abstract class Account(string accountNumber, Customer customer, double balance)
+public abstract class Account(string accountNumber, string customerName, int balance)
 {
-    private static readonly int MaxHistory = 10;
-    public string AccountNumber { get; } = accountNumber;
-    private readonly Customer _customer = customer;
-    protected double Balance = balance;
-    private readonly Transaction[] _history = new Transaction[Account.MaxHistory];
-    protected abstract double YearlyInterest { get; }
-    protected abstract double MonthlyFee { get; }
-    public abstract string AccountType { get; }
+    public static int TotalAccount = 0;
+    public string AccountNumber { get; private set; } = accountNumber;
+    public string OwnerName = customerName;
+    public int Balance { get; set; } = balance;
+    private string[] _history = new string[10];
+    private int historyCount;
+    // protected abstract double YearlyInterest { get; }
+    // protected abstract double MonthlyFee { get; }
+    // public abstract string AccountType { get; }
+    // private static readonly int MaxHistory = 10;
 
-    public bool Deposit(double amount)
+    public bool Deposit(int amount)
     {
+        if (amount <= 0) return false;
         Balance += amount;
-        PushTransaction("Deposit", amount, Balance);
+        RecordHistory($"Deposit : {Utils.FormatRupiah(amount)}");
         return true;
     }
 
-    public bool Withdraw(double amount)
+    public bool Deposit(int amount, string note)
     {
-        if (!CanWithdraw(amount)) return false;
-        Balance -= amount;
-        PushTransaction("Withdraw", amount, Balance);
+        if (amount <= 0) return false;
+        Balance += amount;
+        RecordHistory($"Deposit | {Utils.FormatRupiah(amount)} | {note}");
         return true;
     }
 
-    protected void PushTransaction(string type, double amount, double balanceAfter)
+    public abstract bool Withdraw(int amount);
+    public abstract int AnnualInterestRate();
+    public abstract int AdminFee();
+
+    public void ProcessMonthEnd()
     {
-        Transaction newTransaction = new Transaction(type, amount, balanceAfter);
+        var oldBalance = Balance;
+        // ReSharper disable once PossibleLossOfFraction
+        int monthlyInterest = AnnualInterestRate()/12;
+        Balance += monthlyInterest;
+        RecordHistory($"Monthly Interest | {Utils.FormatRupiah(monthlyInterest)} | Balance : {Utils.FormatRupiah(Balance)}");
+        Balance -= AdminFee();
+        RecordHistory($"Monthly Fee | {Utils.FormatRupiah(AdminFee())} | Balance : {Balance}");
+        
+        Console.WriteLine("==================================");
+        Console.WriteLine($"Update bulanan untuk : {OwnerName} | {AccountNumber}");
+        Console.WriteLine($"Saldo awal: Rp. {Utils.FormatRupiah(oldBalance)}\nBunga: Rp. {Utils.FormatRupiah(monthlyInterest)}\n"+
+                          $"Biaya admin: Rp. {Utils.FormatRupiah(AdminFee())}\nSaldo Baru: Rp. {Utils.FormatRupiah(Balance)}");
+        
+    }
+    
+    protected void RecordHistory(string text)
+    {
         for (var i = 0; i < _history.Length - 1; i++)
         {
             _history[i] = _history[i + 1];
         }
 
-        _history[9] = newTransaction;
+        _history[9] = text;
     }
 
-    public void PrintHistory()
+    public void PrintStatement()
     {
         foreach (var transaction in _history)
         {
-            transaction?.PrintStatement();
+            Console.WriteLine(transaction);
         }
-    }
-
-    public void ApplyEndMonth()
-    {
-        var oldBalance = Balance;
-        double monthlyInterest = Balance *  (YearlyInterest / 12);
-        Balance += monthlyInterest;
-        PushTransaction("Monthly Interest", monthlyInterest, Balance);
-        Balance -= MonthlyFee;
-        PushTransaction("Monthly Fee", MonthlyFee, Balance);
-        
-        Console.WriteLine("==================================");
-        Console.WriteLine($"Update bulanan untuk : {_customer.Name} | {AccountType} | {AccountNumber}");
-        Console.WriteLine($"Saldo awal: Rp. {oldBalance:N}\nBunga: Rp. {monthlyInterest:N}\n"+
-                          $"Biaya admin: Rp. {MonthlyFee:N}\nSaldo Baru: Rp. {Balance:N}");
-    }
-    protected abstract bool CanWithdraw(double amount);
-    
-    public double GetBalance()
-    {
-        return Balance;
-    }
-
-    public void AcceptTransfer(double amount)
-    {
-        Balance += amount;
-        PushTransaction("Transfer In", amount, Balance);
     }
 }

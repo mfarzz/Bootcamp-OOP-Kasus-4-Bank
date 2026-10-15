@@ -118,7 +118,7 @@ public class Features
             Console.WriteLine("Akun tidak ditemukan.");
             return;
         }
-        acc.PrintHistory();
+        acc.PrintStatement();
     }
     
     // Menu 6
