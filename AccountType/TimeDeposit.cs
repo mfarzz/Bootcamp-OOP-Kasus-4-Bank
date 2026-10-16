@@ -1,29 +1,22 @@
 ﻿using PracticeBank.Abstract;
+using PracticeBank.Exceptions;
 
 namespace PracticeBank.AccountType;
 
 public class TimeDeposit(string accountNumber, string ownerName, int balance, int monthsToMaturity)
     : Account(accountNumber, ownerName, balance)
 {
-    public int MonthsToMaturity = monthsToMaturity;
+    public int MonthsToMaturity { get; private set; } = monthsToMaturity;
 
-    public override bool Withdraw(int amount)
+    public override void Withdraw(int amount)
     {
-        if (amount <= 0)
-        {
-            Console.WriteLine("Nominal harus lebih besar dari 0");
-            return false;
-        }
+        ValidateAmount(amount);
 
-        if (MonthsToMaturity > 0)
-        {
-            Console.WriteLine($"Jatuh tempo (dalam bulan) : {MonthsToMaturity}");
-            return false;
-        }
+        if (MonthsToMaturity > 0) throw new DepositLockedException(MonthsToMaturity);
+        if (amount > Balance) throw new InsufficientBalanceException(Balance, amount);
 
         Balance -= amount;
         RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
-        return true;
     }
 
     public override int AnnualInterestRate()
@@ -36,9 +29,15 @@ public class TimeDeposit(string accountNumber, string ownerName, int balance, in
         return 0;
     }
 
+    public override void ProcessMonthEnd()
+    {
+        base.ProcessMonthEnd();
+        if (MonthsToMaturity > 0) MonthsToMaturity--;
+    }
+
     public override void Info()
     {
-        Console.WriteLine($"Pemilik: {OwnerName} | {AccountNumber} |  Saldo : {Utils.FormatRupiah(Balance)} "
-                          + "| Jatuh tempo dalam {MonthsToMaturity} bulan");
+        Console.WriteLine($"Pemilik: {OwnerName} | {AccountNumber} | Saldo : {Utils.FormatRupiah(Balance)} " +
+                          $"| Jatuh tempo dalam {MonthsToMaturity} bulan");
     }
 }

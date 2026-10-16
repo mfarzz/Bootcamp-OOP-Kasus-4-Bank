@@ -2,70 +2,73 @@
 
 public abstract class Account(string accountNumber, string customerName, int balance)
 {
-    public static int TotalAccount = 0;
-    public string OwnerName = customerName;
-    private readonly string[] _history = new string[10];
-    private int historyCount;
+    private readonly List<string> _history = new();
+
     public string AccountNumber { get; } = accountNumber;
+    public string OwnerName { get; } = customerName;
+    public int Balance { get; protected set; } = balance;
+    public IReadOnlyList<string> History => _history;
 
-    public int Balance { get; set; } = balance;
-    // protected abstract double YearlyInterest { get; }
-    // protected abstract double MonthlyFee { get; }
-    // public abstract string AccountType { get; }
-    // private static readonly int MaxHistory = 10;
-
-    public bool Deposit(int amount)
+    public void Deposit(int amount)
     {
-        if (amount <= 0) return false;
+        ValidateAmount(amount);
         Balance += amount;
         RecordHistory($"Deposit : {Utils.FormatRupiah(amount)}");
-        return true;
     }
 
-    public bool Deposit(int amount, string note)
+    public void Deposit(int amount, string note)
     {
-        if (amount <= 0) return false;
+        ValidateAmount(amount);
         Balance += amount;
         RecordHistory($"Deposit | {Utils.FormatRupiah(amount)} | {note}");
-        return true;
     }
 
-    public abstract bool Withdraw(int amount);
+    public abstract void Withdraw(int amount);
     public abstract int AnnualInterestRate();
     public abstract int AdminFee();
 
-    public void ProcessMonthEnd()
+    public virtual void ProcessMonthEnd()
     {
         var oldBalance = Balance;
-        // ReSharper disable once PossibleLossOfFraction
         var monthlyInterest = AnnualInterestRate() / 12;
+        var fee = AdminFee();
+
         Balance += monthlyInterest;
-        RecordHistory(
-            $"Monthly Interest | {Utils.FormatRupiah(monthlyInterest)} | Balance : {Utils.FormatRupiah(Balance)}");
-        Balance -= AdminFee();
-        RecordHistory($"Monthly Fee | {Utils.FormatRupiah(AdminFee())} | Balance : {Balance}");
+        RecordHistory($"Monthly Interest | {Utils.FormatRupiah(monthlyInterest)} | Balance : {Utils.FormatRupiah(Balance)}");
+        Balance -= fee;
+        RecordHistory($"Monthly Fee | {Utils.FormatRupiah(fee)} | Balance : {Utils.FormatRupiah(Balance)}");
 
         Console.WriteLine("==================================");
         Console.WriteLine($"Update bulanan untuk : {OwnerName} | {AccountNumber}");
-        Console.WriteLine(
-            $"Saldo awal: Rp. {Utils.FormatRupiah(oldBalance)}\nBunga: Rp. {Utils.FormatRupiah(monthlyInterest)}\n" +
-            $"Biaya admin: Rp. {Utils.FormatRupiah(AdminFee())}\nSaldo Baru: Rp. {Utils.FormatRupiah(Balance)}");
-    }
-
-    protected void RecordHistory(string text)
-    {
-        for (var i = 0; i < _history.Length - 1; i++) _history[i] = _history[i + 1];
-
-        _history[9] = text;
+        Console.WriteLine($"Saldo awal  : {Utils.FormatRupiah(oldBalance)}\n" +
+                          $"Bunga       : {Utils.FormatRupiah(monthlyInterest)}\n" +
+                          $"Biaya admin : {Utils.FormatRupiah(fee)}\n" +
+                          $"Saldo baru  : {Utils.FormatRupiah(Balance)}");
     }
 
     public void PrintStatement()
     {
-        foreach (var transaction in _history) Console.WriteLine(transaction);
+        if (_history.Count == 0)
+        {
+            Console.WriteLine("Belum ada transaksi.");
+            return;
+        }
+
+        for (var i = 0; i < _history.Count; i++) Console.WriteLine($"{i + 1}. {_history[i]}");
     }
 
     public virtual void Info()
     {
-        Console.WriteLine($"Pemilik: {OwnerName} | {AccountNumber} |  Saldo : {Utils.FormatRupiah(Balance)}");
+        Console.WriteLine($"Pemilik: {OwnerName} | {AccountNumber} | Saldo : {Utils.FormatRupiah(Balance)}");
+    }
+
+    protected void RecordHistory(string text)
+    {
+        _history.Add(text);
+    }
+
+    protected static void ValidateAmount(int amount)
+    {
+        if (amount <= 0) throw new ArgumentException("Jumlah harus lebih dari 0.");
     }
 }

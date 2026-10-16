@@ -1,4 +1,3 @@
-using PracticeBank.Abstract;
 using PracticeBank.AccountType;
 using PracticeBank.Class;
 using PracticeBank.Feature;
@@ -7,65 +6,51 @@ namespace PracticeBank;
 
 class Program
 {
-    static Customer c1 = new Customer("Abiem", "CUST01");
-    static Customer c2 = new Customer("Fariz", "CUST02");
-    static Customer[] allCustomers = { c1, c2 };
-    
-    private static Saving sa1 = new Saving("sa-01", c1.Name, 200000);
-    private static Checking ca1 = new Checking("ca-01", c1.Name, 1500000);
-    private static TimeDeposit tda1 = new TimeDeposit("tda-01", c1.Name, 10000000, 2);
-    
-    private static Saving sa2 = new Saving("sa-02", c2.Name, 150000);
-    private static Checking ca2 = new Checking("ca-02", c2.Name, 800000);
-    private static TimeDeposit tda2 = new TimeDeposit("tda-02", c2.Name, 2000000, 3);
-    
-    static Account[] accountsC1 = { sa1, ca1, tda1 };
-    static Account[] accountsC2 = { sa2, ca2, tda2 };
-    
-    static Bank bank = new Bank(allCustomers, accountsC1, accountsC2);
-    
     static void Main(string[] args)
     {
-        foreach (var acc in accountsC1) c1.AddAccount(acc);
-        foreach (var acc in accountsC2) c2.AddAccount(acc);
-        
-        // Coba atur saldo dari luar kelas
-        // c1.Accounts[0].Balance = 20000;
+        var bank = new Bank();
+        SeedData(bank);
 
         while (true)
         {
             Console.Clear();
-            // Customer currentUser = PickUser();
-            var currentUser = PickUser();
-            var accounts = currentUser == c1 ? accountsC1 : accountsC2;
+            var currentUser = PickUser(bank);
+
             while (true)
             {
                 Console.Clear();
                 ShowMenu();
-                var option = GetOption();
+                var option = Console.ReadLine();
                 Console.WriteLine("=============================");
+
                 switch (option)
                 {
                     case "1":
                         Features.Profil(currentUser);
                         break;
                     case "2":
-                        Features.Deposit(accounts);
+                        Features.Deposit(bank, currentUser);
                         break;
                     case "3":
-                        Features.Withdraw(accounts);
+                        Features.Withdraw(bank, currentUser);
                         break;
                     case "4":
-                        Features.Transfer(accounts, bank);
+                        Features.Transfer(bank, currentUser);
                         break;
                     case "5":
-                        Features.PrintMutation(accounts);
+                        Features.PrintMutation(currentUser);
                         break;
                     case "6":
-                        Features.EndMonthProcess(accounts);
+                        Features.EndMonthProcess(bank);
                         break;
                     case "7":
-                        Features.AddAccount(currentUser, accounts, bank);
+                        Features.AddAccount(bank, currentUser);
+                        break;
+                    case "8":
+                        Features.ToggleBlock(bank);
+                        break;
+                    case "9":
+                        Features.ShowLargeTransactions(bank);
                         break;
                     case "0":
                         break;
@@ -77,10 +62,7 @@ class Program
                         break;
                 }
 
-                if (option == "0")
-                {
-                    break;
-                }
+                if (option == "0") break;
 
                 Console.WriteLine("===== Enter to continue =====");
                 Console.ReadLine();
@@ -88,34 +70,45 @@ class Program
         }
     }
 
-    private static Customer PickUser()
+    private static void SeedData(Bank bank)
+    {
+        var c1 = new Customer("Abiem", "CUST01");
+        var c2 = new Customer("Fariz", "CUST02");
+        bank.AddCustomer(c1);
+        bank.AddCustomer(c2);
+
+        bank.OpenAccount(c1, new Saving("sa-01", c1.Name, 200000));
+        bank.OpenAccount(c1, new Checking("ca-01", c1.Name, 1500000));
+        bank.OpenAccount(c1, new TimeDeposit("tda-01", c1.Name, 10000000, 2));
+
+        bank.OpenAccount(c2, new Saving("sa-02", c2.Name, 150000));
+        bank.OpenAccount(c2, new Checking("ca-02", c2.Name, 800000));
+        bank.OpenAccount(c2, new TimeDeposit("tda-02", c2.Name, 2000000, 3));
+    }
+
+    private static Customer PickUser(Bank bank)
     {
         while (true)
         {
-            Console.WriteLine($"Registered Customer:\n1. {c1.Name}\n2. {c2.Name}\n3. Total Account");
+            Console.WriteLine("Registered Customer:");
+            for (var i = 0; i < bank.Customers.Count; i++)
+                Console.WriteLine($"{i + 1}. {bank.Customers[i].Name}");
+            
             Console.Write("Pick user: ");
-            var  input = Console.ReadLine();
-            if (input == "1")
+            if (int.TryParse(Console.ReadLine(), out var choice))
             {
-                return c1;
-            } 
-            if (input == "2")
-            {
-                return c2;
+                if (choice >= 1 && choice <= bank.Customers.Count) return bank.Customers[choice - 1];
             }
+
+            Console.WriteLine("Pilihan tidak valid.\n");
         }
     }
 
     private static void ShowMenu()
     {
-        Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw \n4. Transfer");
-        Console.WriteLine("5. Print Mutation\n6. End Month Process\n" + 
-                          "7. Add Account\n0. Switch User\nx. Exit");
+        Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw\n4. Transfer");
+        Console.WriteLine("5. Print Mutation\n6. End Month Process (semua rekening)\n7. Add Account");
+        Console.WriteLine("8. Blokir / Buka Blokir Rekening\n9. Transaksi Besar\n0. Switch User\nx. Exit");
         Console.Write("Select an option: ");
-    }
-
-    private static string? GetOption()
-    {
-        return Console.ReadLine();
     }
 }

@@ -1,48 +1,22 @@
 ﻿using PracticeBank.Abstract;
+using PracticeBank.Exceptions;
 
 namespace PracticeBank.AccountType;
 
 public class Checking(string accountNumber, string ownerName, int balance)
     : Account(accountNumber, ownerName, balance), ITransferable
 {
-    public int OverdraftLimit = -1000000;
+    public int OverdraftLimit { get; } = -1000000;
+
+    public override void Withdraw(int amount)
+    {
+        Debit(amount, "Withdraw");
+    }
 
     public bool Transfer(Account target, int amount)
     {
-        if (amount <= 0)
-        {
-            Console.WriteLine("Nominal harus lebih besar dari 0");
-            return false;
-        }
-
-        if (Balance - amount < OverdraftLimit)
-        {
-            Console.WriteLine($"Penarikan melebihi limit overdraft : Rp. {OverdraftLimit}");
-            return false;
-        }
-
-        Balance -= amount;
-        target.Deposit(amount);
-        RecordHistory($"Transfer Out : {Utils.FormatRupiah(amount)}");
-        return true;
-    }
-
-    public override bool Withdraw(int amount)
-    {
-        if (amount <= 0)
-        {
-            Console.WriteLine("Nominal harus lebih besar dari 0");
-            return false;
-        }
-
-        if (Balance - amount < OverdraftLimit)
-        {
-            Console.WriteLine($"Penarikan melebihi limit overdraft : Rp. {OverdraftLimit}");
-            return false;
-        }
-
-        Balance -= amount;
-        RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
+        Debit(amount, $"Transfer Out ke {target.AccountNumber}");
+        target.Deposit(amount, $"Transfer In dari {AccountNumber}");
         return true;
     }
 
@@ -54,5 +28,17 @@ public class Checking(string accountNumber, string ownerName, int balance)
     public override int AdminFee()
     {
         return 25000;
+    }
+
+    private void Debit(int amount, string label)
+    {
+        ValidateAmount(amount);
+
+        if (Balance - amount < OverdraftLimit)
+            throw new InsufficientBalanceException(Balance, amount,
+                $"Limit overdraft {Utils.FormatRupiah(OverdraftLimit)}.");
+
+        Balance -= amount;
+        RecordHistory($"{label} : {Utils.FormatRupiah(amount)}");
     }
 }
