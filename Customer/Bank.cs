@@ -12,19 +12,13 @@ public class Bank
         this.customers = customers;
 
         var total = 0;
-        foreach (var group in accountsPerCustomer)
-        {
-            total += group.Length;
-        }
+        foreach (var group in accountsPerCustomer) total += group.Length;
+        
         accounts = new Account[total];
         var index = 0;
         foreach (var group in accountsPerCustomer)
-        {
             foreach (var account in group)
-            {
                 accounts[index++] = account;
-            }
-        }
     }
 
     public Account? FindAccount(string accountNumber)
@@ -40,6 +34,6 @@ public class Bank
     {
         foreach (var account in accounts)
             if (account != null)
-                account.ProcessMonthEnd(); //tunggu implementasi di account
+                account.ProcessMonthEnd();
     }
 }

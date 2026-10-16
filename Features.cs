@@ -62,7 +62,7 @@ public class Features
             if (picked == null) return;
             if (picked is ITransferable t)
             {
-                source = picked
+                source = picked;
                 transferable = t;
                 break;
             }
