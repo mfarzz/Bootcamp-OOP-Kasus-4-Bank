@@ -1,7 +1,6 @@
-﻿using Bank.Abstract;
-using Bank.Class;
+﻿using PracticeBank.Abstract;
 
-namespace Bank.AccountType;
+namespace PracticeBank.AccountType;
 
 public class Saving(string accountNumber, string ownerName, int balance)
     : Account(accountNumber, ownerName, balance), ITransferable
@@ -14,12 +13,14 @@ public class Saving(string accountNumber, string ownerName, int balance)
         {
             Console.WriteLine("Nominal harus lebih besar dari 0");
             return false;
-        } 
+        }
+
         if (Balance - amount < MinimumBalance)
         {
             Console.WriteLine($"Saldo minimal: Rp. {Utils.FormatRupiah(MinimumBalance)}");
             return false;
         }
+
         Balance -= amount;
         RecordHistory($"Transfer Out : {Utils.FormatRupiah(amount)}");
         target.Deposit(amount);
@@ -32,12 +33,14 @@ public class Saving(string accountNumber, string ownerName, int balance)
         {
             Console.WriteLine("Nominal harus lebih besar dari 0");
             return false;
-        } 
+        }
+
         if (Balance - amount < MinimumBalance)
         {
             Console.WriteLine($"Saldo minimal: Rp. {Utils.FormatRupiah(MinimumBalance)}");
             return false;
         }
+
         Balance -= amount;
         RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
         return true;
@@ -45,7 +48,7 @@ public class Saving(string accountNumber, string ownerName, int balance)
 
     public override int AnnualInterestRate()
     {
-        return (int) (Balance * 0.02);
+        return (int)(Balance * 0.02);
     }
 
     public override int AdminFee()

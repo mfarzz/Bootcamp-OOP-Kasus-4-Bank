@@ -1,4 +1,4 @@
-﻿namespace Bank.Abstract;
+﻿namespace PracticeBank.Abstract;
 
 public enum AccountType
 {

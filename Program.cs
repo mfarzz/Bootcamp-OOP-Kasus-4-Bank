@@ -1,8 +1,9 @@
-using Bank.AccountType;
-using Bank.Class;
-using Bank.Feature;
+using PracticeBank.Abstract;
+using PracticeBank.AccountType;
+using PracticeBank.Class;
+using PracticeBank.Feature;
 
-namespace Bank;
+namespace PracticeBank;
 
 class Program
 {
@@ -11,24 +12,24 @@ class Program
     static Customer c1 = new Customer("Abiem", "CUST01");
     static Customer c2 = new Customer("Fariz", "CUST02");
     static Customer[] allCustomers = { c1, c2 };
-
-    private static Saving sa1 = new Saving("sa-01", c1, 200000);
-    private static Checking ca1 = new Checking("ca-01", c1, 1500000);
-    private static TimeDeposit tda1 = new TimeDeposit("tda-01", c1, 10000000);
     
-    private static Saving sa2 = new Saving("sa-02", c2, 150000);
-    private static Checking ca2 = new Checking("ca-02", c2, 800000);
-    private static TimeDeposit tda2 = new TimeDeposit("tda-02", c2, 2000000);
+    private static Saving sa1 = new Saving("sa-01", c1.Name, 200000);
+    private static Checking ca1 = new Checking("ca-01", c1.Name, 1500000);
+    private static TimeDeposit tda1 = new TimeDeposit("tda-01", c1.Name, 10000000, 2);
+    
+    private static Saving sa2 = new Saving("sa-02", c2.Name, 150000);
+    private static Checking ca2 = new Checking("ca-02", c2.Name, 800000);
+    private static TimeDeposit tda2 = new TimeDeposit("tda-02", c2.Name, 2000000, 3);
+    
+    static Account[] accountsC1 = { sa1, ca1, tda1 };
+    static Account[] accountsC2 = { sa2, ca2, tda2 };
+    
+    static Bank bank = new Bank(allCustomers, accountsC1, accountsC2);
     
     static void Main(string[] args)
     {
-        c1.AddAccount(sa1);
-        c1.AddAccount(ca1);
-        c1.AddAccount(tda1);
-        
-        c2.AddAccount(sa2);
-        c2.AddAccount(ca2);
-        c2.AddAccount(tda2);
+        foreach (var acc in accountsC1) c1.AddAccount(acc);
+        foreach (var acc in accountsC2) c2.AddAccount(acc);
         
         // Coba atur saldo dari luar kelas
         // c1.Accounts[0].Balance = 20000;
@@ -36,7 +37,9 @@ class Program
         while (true)
         {
             Console.Clear();
-            Customer currentUser = PickUser();
+            // Customer currentUser = PickUser();
+            var currentUser = PickUser();
+            var accounts = currentUser == c1 ? accountsC1 : accountsC2;
             while (true)
             {
                 Console.Clear();
@@ -46,16 +49,16 @@ class Program
                 switch (option)
                 {
                     case "1":
-                        features.Profil(currentUser);
+                        Features.Profil(currentUser);
                         break;
                     case "2":
-                        features.Deposit(currentUser);
+                        Features.Deposit(accounts);
                         break;
                     case "3":
-                        features.Withdraw(currentUser);
+                        Features.Withdraw(accounts);
                         break;
                     case "4":
-                        features.Transfer(currentUser, allCustomers);
+                        Features.Transfer(accounts, bank);
                         break;
                     case "5":
                         features.PrintMutation(currentUser);

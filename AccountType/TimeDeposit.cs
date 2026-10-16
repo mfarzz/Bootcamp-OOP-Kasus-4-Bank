@@ -1,25 +1,26 @@
-﻿using Bank.Abstract;
-using Bank.Class;
+﻿using PracticeBank.Abstract;
 
-namespace Bank.AccountType;
+namespace PracticeBank.AccountType;
 
 public class TimeDeposit(string accountNumber, string ownerName, int balance, int monthsToMaturity)
     : Account(accountNumber, ownerName, balance)
 {
     public int MonthsToMaturity = monthsToMaturity;
-    
+
     public override bool Withdraw(int amount)
     {
         if (amount <= 0)
         {
             Console.WriteLine("Nominal harus lebih besar dari 0");
             return false;
-        } 
+        }
+
         if (MonthsToMaturity > 0)
         {
             Console.WriteLine($"Jatuh tempo (dalam bulan) : {MonthsToMaturity}");
             return false;
         }
+
         Balance -= amount;
         RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
         return true;

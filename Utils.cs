@@ -1,6 +1,4 @@
-﻿using Bank.Class;
-
-namespace Bank;
+﻿namespace PracticeBank;
 
 public class Utils
 {

@@ -1,15 +1,14 @@
-﻿using Bank.Class;
-
-namespace Bank.Abstract;
+﻿namespace PracticeBank.Abstract;
 
 public abstract class Account(string accountNumber, string customerName, int balance)
 {
     public static int TotalAccount = 0;
-    public string AccountNumber { get; private set; } = accountNumber;
     public string OwnerName = customerName;
-    public int Balance { get; set; } = balance;
-    private string[] _history = new string[10];
+    private readonly string[] _history = new string[10];
     private int historyCount;
+    public string AccountNumber { get; } = accountNumber;
+
+    public int Balance { get; set; } = balance;
     // protected abstract double YearlyInterest { get; }
     // protected abstract double MonthlyFee { get; }
     // public abstract string AccountType { get; }
@@ -39,35 +38,30 @@ public abstract class Account(string accountNumber, string customerName, int bal
     {
         var oldBalance = Balance;
         // ReSharper disable once PossibleLossOfFraction
-        int monthlyInterest = AnnualInterestRate()/12;
+        var monthlyInterest = AnnualInterestRate() / 12;
         Balance += monthlyInterest;
-        RecordHistory($"Monthly Interest | {Utils.FormatRupiah(monthlyInterest)} | Balance : {Utils.FormatRupiah(Balance)}");
+        RecordHistory(
+            $"Monthly Interest | {Utils.FormatRupiah(monthlyInterest)} | Balance : {Utils.FormatRupiah(Balance)}");
         Balance -= AdminFee();
         RecordHistory($"Monthly Fee | {Utils.FormatRupiah(AdminFee())} | Balance : {Balance}");
-        
+
         Console.WriteLine("==================================");
         Console.WriteLine($"Update bulanan untuk : {OwnerName} | {AccountNumber}");
-        Console.WriteLine($"Saldo awal: Rp. {Utils.FormatRupiah(oldBalance)}\nBunga: Rp. {Utils.FormatRupiah(monthlyInterest)}\n"+
-                          $"Biaya admin: Rp. {Utils.FormatRupiah(AdminFee())}\nSaldo Baru: Rp. {Utils.FormatRupiah(Balance)}");
-        
+        Console.WriteLine(
+            $"Saldo awal: Rp. {Utils.FormatRupiah(oldBalance)}\nBunga: Rp. {Utils.FormatRupiah(monthlyInterest)}\n" +
+            $"Biaya admin: Rp. {Utils.FormatRupiah(AdminFee())}\nSaldo Baru: Rp. {Utils.FormatRupiah(Balance)}");
     }
-    
+
     protected void RecordHistory(string text)
     {
-        for (var i = 0; i < _history.Length - 1; i++)
-        {
-            _history[i] = _history[i + 1];
-        }
+        for (var i = 0; i < _history.Length - 1; i++) _history[i] = _history[i + 1];
 
         _history[9] = text;
     }
 
     public void PrintStatement()
     {
-        foreach (var transaction in _history)
-        {
-            Console.WriteLine(transaction);
-        }
+        foreach (var transaction in _history) Console.WriteLine(transaction);
     }
 
     public virtual void Info()
