@@ -7,8 +7,6 @@ namespace PracticeBank;
 
 class Program
 {
-    static Features features = new Features();
-    
     static Customer c1 = new Customer("Abiem", "CUST01");
     static Customer c2 = new Customer("Fariz", "CUST02");
     static Customer[] allCustomers = { c1, c2 };
@@ -61,13 +59,13 @@ class Program
                         Features.Transfer(accounts, bank);
                         break;
                     case "5":
-                        features.PrintMutation(currentUser);
+                        Features.PrintMutation(accounts);
                         break;
                     case "6":
-                        features.EndMonthProcess(currentUser);
+                        Features.EndMonthProcess(accounts);
                         break;
                     case "7":
-                        features.AddAccount(currentUser);
+                        Features.AddAccount(currentUser, accounts, bank);
                         break;
                     case "0":
                         break;

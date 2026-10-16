@@ -4,21 +4,33 @@ namespace PracticeBank.Class;
 
 public class Bank
 {
-    private readonly Account[] accounts;
+    private Account[] accounts;
     private Customer[] customers;
 
     public Bank(Customer[] customers, params Account[][] accountsPerCustomer)
     {
+        if (customers.Length != accountsPerCustomer.Length)
+        {
+            Console.WriteLine("Invalid amount of customers");
+            return;
+        }
+ 
         this.customers = customers;
-
+ 
         var total = 0;
         foreach (var group in accountsPerCustomer) total += group.Length;
-        
+ 
         accounts = new Account[total];
         var index = 0;
-        foreach (var group in accountsPerCustomer)
-            foreach (var account in group)
-                accounts[index++] = account;
+
+        for (var i = 0; i < accountsPerCustomer.Length; i++)
+        {
+            foreach (var acc in accountsPerCustomer[i])
+            {
+                this.customers[i].AddAccount(acc);
+                accounts[index++] = acc;
+            }
+        }
     }
 
     public Account? FindAccount(string accountNumber)
