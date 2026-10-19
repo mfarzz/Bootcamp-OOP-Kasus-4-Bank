@@ -16,43 +16,58 @@ public static class Features
     // Menu 2
     public static void Deposit(Bank bank, Customer customer)
     {
-        var account = PickAccount(customer.Accounts);
+        var account = PickAccount(customer.Accounts, bank);
         if (account == null) return;
 
         var amount = ReadAmount("Jumlah deposit: Rp ");
         if (amount == null) return;
 
-        if (!TryRun(() => bank.Deposit(account, amount.Value))) return;
+        var ok = TryRun(() =>
+        {
+            bank.EnsureNotBlocked(account);
+            return account.Deposit(amount.Value);
+        });
+        if (!ok) return;
 
+        bank.RecordTransaction("Deposit", account, amount.Value);
         Console.WriteLine($"Deposit berhasil. Saldo sekarang: {Utils.FormatRupiah(account.Balance)}");
     }
 
     // Menu 3
     public static void Withdraw(Bank bank, Customer customer)
     {
-        var account = PickAccount(customer.Accounts);
+        var account = PickAccount(customer.Accounts, bank);
         if (account == null) return;
 
         var amount = ReadAmount("Jumlah penarikan: Rp ");
         if (amount == null) return;
 
-        if (!TryRun(() => bank.Withdraw(account, amount.Value))) return;
+        var ok = TryRun(() =>
+        {
+            bank.EnsureNotBlocked(account);
+            return account.Withdraw(amount.Value);
+        });
+        if (!ok) return;
 
+        bank.RecordTransaction("Withdraw", account, amount.Value);
         Console.WriteLine($"Penarikan berhasil. Saldo sekarang: {Utils.FormatRupiah(account.Balance)}");
     }
 
     // Menu 4
     public static void Transfer(Bank bank, Customer sender)
     {
+        // Rekening asal harus mendukung ITransferable (Savings / Checking)
         Account source;
+        ITransferable transferable;
         while (true)
         {
-            var picked = PickAccount(sender.Accounts);
+            var picked = PickAccount(sender.Accounts, bank);
             if (picked == null) return;
 
-            if (picked is ITransferable)
+            if (picked is ITransferable t)
             {
                 source = picked;
+                transferable = t;
                 break;
             }
 
@@ -87,8 +102,16 @@ public static class Features
         var amount = ReadAmount("Jumlah transfer: Rp ");
         if (amount == null) return;
 
-        if (!TryRun(() => bank.TransferMoney(source, destination, amount.Value))) return;
+        // Transfer dijalankan langsung oleh rekening asal (Savings / Checking)
+        var ok = TryRun(() =>
+        {
+            bank.EnsureNotBlocked(source);
+            bank.EnsureNotBlocked(destination);
+            return transferable.Transfer(destination, amount.Value);
+        });
+        if (!ok) return;
 
+        bank.RecordTransaction("Transfer", source, amount.Value);
         Console.WriteLine("=========== BUKTI TRANSFER ==========");
         Console.WriteLine(
             $"Transfer {Utils.FormatRupiah(amount.Value)} ke {destination.OwnerName} ({destination.AccountNumber}) berhasil");
@@ -96,16 +119,22 @@ public static class Features
     }
 
     // Menu 5
-    public static void PrintMutation(Customer customer)
+    public static void PrintMutation(Bank bank, Customer customer)
     {
-        var account = PickAccount(customer.Accounts);
+        var account = PickAccount(customer.Accounts, bank);
         account?.PrintStatement();
     }
 
-    // Menu 6
-    public static void EndMonthProcess(Bank bank)
+    // Menu 6: hanya rekening milik nasabah yang dipilih
+    public static void EndMonthProcess(Bank bank, Customer customer)
     {
-        bank.ProcessMonthEnd();
+        if (customer.AccountCount == 0)
+        {
+            Console.WriteLine("Nasabah belum memiliki rekening.");
+            return;
+        }
+
+        bank.ProcessMonthEnd(customer);
     }
 
     // Menu 7
@@ -122,32 +151,32 @@ public static class Features
             return;
         }
 
-        Account newAccount;
-        switch (type)
+        if (type == Abstract.AccountType.Savings && balance.Value < Savings.DefaultMinimumBalance)
         {
-            case Abstract.AccountType.Saving:
-                var saving = new Saving(number, customer.Name, balance.Value);
-                if (balance.Value < saving.MinimumBalance)
-                {
-                    Console.WriteLine($"Saldo awal tabungan minimal {Utils.FormatRupiah(saving.MinimumBalance)}.");
-                    return;
-                }
-                newAccount = saving;
-                break;
-            case Abstract.AccountType.Checking:
-                newAccount = new Checking(number, customer.Name, balance.Value);
-                break;
-            default:
-                var months = ReadAmount("Jangka waktu deposito (bulan): ");
-                if (months == null) return;
-                if (months.Value <= 0)
-                {
-                    Console.WriteLine("Jangka waktu harus lebih dari 0 bulan.");
-                    return;
-                }
-                newAccount = new TimeDeposit(number, customer.Name, balance.Value, months.Value);
-                break;
+            Console.WriteLine($"Saldo awal tabungan minimal {Utils.FormatRupiah(Savings.DefaultMinimumBalance)}.");
+            return;
         }
+
+        var months = 0;
+        if (type == Abstract.AccountType.TimeDeposit)
+        {
+            var input = ReadAmount("Jangka waktu deposito (bulan): ");
+            if (input == null) return;
+            if (input.Value <= 0)
+            {
+                Console.WriteLine("Jangka waktu harus lebih dari 0 bulan.");
+                return;
+            }
+
+            months = input.Value;
+        }
+
+        Account newAccount = type switch
+        {
+            Abstract.AccountType.Savings => new Savings(number, customer.Name, balance.Value),
+            Abstract.AccountType.Checking => new Checking(number, customer.Name, balance.Value),
+            _ => new TimeDeposit(number, customer.Name, balance.Value, months)
+        };
 
         if (!bank.OpenAccount(customer, newAccount))
         {
@@ -158,55 +187,57 @@ public static class Features
         Console.WriteLine($"Rekening berhasil dibuat: {number} | Saldo: {Utils.FormatRupiah(newAccount.Balance)}");
     }
 
-    // Menu 8: blokir / buka blokir (toggle)
-    public static void ToggleBlock(Bank bank)
+    // Menu 8: blokir / buka blokir (toggle), hanya rekening milik nasabah yang dipilih
+    public static void ToggleBlock(Bank bank, Customer customer)
     {
-        Console.WriteLine("Daftar rekening:");
-        foreach (var acc in bank.Accounts)
-            Console.WriteLine($"  {acc.AccountNumber} | {acc.OwnerName} | " +
-                              (bank.IsBlocked(acc.AccountNumber) ? "DIBLOKIR" : "aktif"));
+        var account = PickAccount(customer.Accounts, bank);
+        if (account == null) return;
 
-        Console.Write("Nomor rekening (kosongkan untuk batal): ");
-        var number = Console.ReadLine()?.Trim();
-        if (string.IsNullOrEmpty(number)) return;
-
-        if (bank.FindAccount(number) == null)
+        if (bank.IsBlocked(account.AccountNumber))
         {
-            Console.WriteLine("Rekening tidak ditemukan.");
-            return;
-        }
-
-        if (bank.IsBlocked(number))
-        {
-            bank.UnblockAccount(number);
-            Console.WriteLine($"Blokir rekening {number} dibuka.");
+            bank.UnblockAccount(account.AccountNumber);
+            Console.WriteLine($"Blokir rekening {account.AccountNumber} dibuka.");
         }
         else
         {
-            bank.BlockAccount(number);
-            Console.WriteLine($"Rekening {number} diblokir.");
+            bank.BlockAccount(account.AccountNumber);
+            Console.WriteLine($"Rekening {account.AccountNumber} diblokir.");
         }
     }
 
-    // Menu 9
-    public static void ShowLargeTransactions(Bank bank)
+    // Menu 9: transaksi besar pada rekening milik nasabah yang dipilih diatas 5 juta
+    public static void ShowLargeTransactions(Bank bank, Customer customer)
     {
-        if (bank.LargeTransactions.Count == 0)
+        var records = bank.GetLargeTransactions(customer);
+        if (records.Count == 0)
         {
             Console.WriteLine($"Belum ada transaksi besar (>= {Utils.FormatRupiah(Bank.LargeTransactionThreshold)}).");
             return;
         }
 
-        Console.WriteLine("Transaksi besar:");
-        foreach (var line in bank.LargeTransactions) Console.WriteLine($"  {line}");
+        Console.WriteLine($"Transaksi di atas {Utils.FormatRupiah(Bank.LargeTransactionThreshold)} milik {customer.Name}:");
+        foreach (var r in records)
+            Console.WriteLine($"  {r.Time:dd/MM/yyyy HH:mm} | {r.Type} | {r.AccountNumber} | {Utils.FormatRupiah(r.Amount)}");
+    }
+    
+    // Menu 10: Rata rata saldo rekening
+    public static void ShowAverageBalance(Customer customer)
+    {
+        if (customer.AccountCount == 0)
+        {
+            Console.WriteLine("Nasabah belum memiliki rekening.");
+            return;
+        }
+        Console.WriteLine($"Rata rata saldo rekening {customer.Name} ({customer.AccountCount}) rekening: " 
+            + Utils.FormatRupiah((int)Math.Round(customer.AverageBalance())));
     }
 
-    private static bool TryRun(Action transaction)
+    // Menjalankan transaksi dan menerjemahkan exception menjadi pesan untuk pengguna
+    private static bool TryRun(Func<bool> transaction)
     {
         try
         {
-            transaction();
-            return true;
+            if (transaction()) return true;
         }
         catch (InsufficientBalanceException ex)
         {
@@ -224,16 +255,12 @@ public static class Features
         {
             Console.WriteLine(ex.Message);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
 
         Console.WriteLine("Transaksi gagal.");
         return false;
     }
 
-    private static Account? PickAccount(IReadOnlyList<Account> accounts)
+    private static Account? PickAccount(IReadOnlyList<Account> accounts, Bank bank)
     {
         if (accounts.Count == 0)
         {
@@ -243,7 +270,8 @@ public static class Features
 
         Console.WriteLine("Pilih rekening:");
         for (var i = 0; i < accounts.Count; i++)
-            Console.WriteLine($"    {i + 1}. {accounts[i].AccountNumber} | {Utils.FormatRupiah(accounts[i].Balance)}");
+            Console.WriteLine($"    {i + 1}. {accounts[i].AccountNumber} | {Utils.FormatRupiah(accounts[i].Balance)}" +
+                              (bank.IsBlocked(accounts[i].AccountNumber) ? " | DIBLOKIR" : ""));
 
         Console.Write("Nomor pilihan: ");
         if (int.TryParse(Console.ReadLine(), out var index) && index >= 1 && index <= accounts.Count)
@@ -253,6 +281,8 @@ public static class Features
         return null;
     }
 
+    // Hanya memastikan input berupa bilangan bulat; nilai 0 / negatif sengaja diteruskan
+    // agar ditolak oleh ArgumentException dari Account.
     private static int? ReadAmount(string prompt)
     {
         Console.Write(prompt);
@@ -273,7 +303,7 @@ public static class Features
             switch (Console.ReadLine())
             {
                 case "1":
-                    return Abstract.AccountType.Saving;
+                    return Abstract.AccountType.Savings;
                 case "2":
                     return Abstract.AccountType.Checking;
                 case "3":
@@ -289,7 +319,7 @@ public static class Features
     {
         var prefix = type switch
         {
-            Abstract.AccountType.Saving => "sa-",
+            Abstract.AccountType.Savings => "sa-",
             Abstract.AccountType.Checking => "ca-",
             _ => "tda-"
         };

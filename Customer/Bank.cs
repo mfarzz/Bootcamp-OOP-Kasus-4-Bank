@@ -4,107 +4,94 @@ namespace PracticeBank.Class;
 
 public class Bank
 {
-    public const int LargeTransactionThreshold = 50_000_000;
+    // Transaksi dengan nominal >= batas ini dicatat sebagai transaksi besar
+    public const int LargeTransactionThreshold = 5_000_000;
 
-    private readonly Repository<Account> _accounts = new();
-    private readonly List<Customer> _customers = new();
-    private readonly HashSet<string> _blockedAccounts = new();
-    private readonly List<string> _largeTransactions = new();
+    private readonly List<Customer> customers = new();
+    private readonly Repository<Account> accounts = new();           // List + Dictionary
+    private readonly HashSet<string> blockedAccounts = new();        // nomor rekening yang diblokir
+    private readonly List<TransactionRecord> transactions = new();
 
-    public IReadOnlyList<Customer> Customers => _customers;
-    public IReadOnlyList<Account> Accounts => _accounts.All;
-    public IReadOnlyList<string> LargeTransactions => _largeTransactions;
-
-    public void AddCustomer(Customer customer)
+    public Bank(IEnumerable<Customer> customers, IEnumerable<Account> accounts)
     {
-        _customers.Add(customer);
+        this.customers.AddRange(customers);
+        foreach (var account in accounts) this.accounts.Add(account);
     }
-    
-    public bool OpenAccount(Customer customer, Account account)
-    {
-        if (_accounts.FindByNumber(account.AccountNumber) != null) return false;
-        if (!customer.AddAccount(account)) return false;
 
-        _accounts.Add(account);
-        return true;
-    }
+    public IReadOnlyList<Customer> Customers => customers;
+    public IReadOnlyList<Account> Accounts => accounts.All;
 
     public Account? FindAccount(string accountNumber)
     {
-        return _accounts.FindByNumber(accountNumber);
+        return accounts.FindByNumber(accountNumber);
     }
     
+
+    // Proses akhir bulan hanya untuk rekening milik satu nasabah
+    public void ProcessMonthEnd(Customer customer)
+    {
+        foreach (var account in customer.Accounts) ProcessOne(account);
+    }
+
+    // Daftarkan rekening baru ke nasabah sekaligus ke daftar rekening bank
+    public bool OpenAccount(Customer customer, Account account)
+    {
+        if (accounts.FindByNumber(account.AccountNumber) != null) return false;
+        if (!customer.AddAccount(account)) return false;
+
+        accounts.Add(account);
+        return true;
+    }
+
     public bool BlockAccount(string accountNumber)
     {
-        return FindAccount(accountNumber) != null && _blockedAccounts.Add(accountNumber);
+        return FindAccount(accountNumber) != null && blockedAccounts.Add(accountNumber);
     }
 
     public bool UnblockAccount(string accountNumber)
     {
-        return _blockedAccounts.Remove(accountNumber);
+        return blockedAccounts.Remove(accountNumber);
     }
 
     public bool IsBlocked(string accountNumber)
     {
-        return _blockedAccounts.Contains(accountNumber);
-    }
-        
-    public void Deposit(Account account, int amount)
-    {
-        EnsureNotBlocked(account);
-        account.Deposit(amount);
-        DetectLargeTransaction("Deposit", account, amount);
+        return blockedAccounts.Contains(accountNumber);
     }
 
-    public void Withdraw(Account account, int amount)
-    {
-        EnsureNotBlocked(account);
-        account.Withdraw(amount);
-        DetectLargeTransaction("Withdraw", account, amount);
-    }
-
-    public void TransferMoney(Account source, Account destination, int amount)
-    {
-        if (ReferenceEquals(source, destination))
-            throw new ArgumentException("Rekening tujuan tidak boleh sama dengan rekening asal.");
-
-        if (source is not ITransferable transferable)
-            throw new InvalidOperationException($"Rekening {source.AccountNumber} tidak mendukung transfer.");
-
-        EnsureNotBlocked(source);
-        EnsureNotBlocked(destination);
-
-        transferable.Transfer(destination, amount);
-        DetectLargeTransaction("Transfer", source, amount);
-    }
-
-    public void ProcessMonthEnd()
-    {
-        foreach (var account in _accounts.All)
-        {
-            if (IsBlocked(account.AccountNumber))
-            {
-                Console.WriteLine($"Rekening {account.AccountNumber} diblokir, proses akhir bulan dilewati.");
-                continue;
-            }
-
-            account.ProcessMonthEnd();
-        }
-    }
-
-    private void EnsureNotBlocked(Account account)
+    // Dipanggil sebelum setiap transaksi; rekening terblokir menolak semua transaksi
+    public void EnsureNotBlocked(Account account)
     {
         if (IsBlocked(account.AccountNumber))
             throw new InvalidOperationException($"Rekening {account.AccountNumber} sedang diblokir. Transaksi ditolak.");
     }
 
-    private void DetectLargeTransaction(string type, Account account, int amount)
+    public void RecordTransaction(string type, Account account, int amount)
     {
-        if (amount < LargeTransactionThreshold) return;
+        transactions.Add(new TransactionRecord(DateTime.Now, type, account.AccountNumber, account.OwnerName, amount));
+ 
+        if (amount > LargeTransactionThreshold)
+            Console.WriteLine($"[PERINGATAN] Transaksi besar terdeteksi: {type} {Utils.FormatRupiah(amount)} " +
+                              $"pada rekening {account.AccountNumber}");
+    }
+    
+    // Transaksi besar pada rekening milik satu nasabah
+    public List<TransactionRecord> GetLargeTransactions(Customer customer)
+    {
+        return transactions
+            .Where(t => t.Amount > LargeTransactionThreshold)
+            .Where(t=> customer.Accounts.Any(a => a.AccountNumber == t.AccountNumber))
+            .OrderByDescending(t => t.Time)
+            .ToList();
+    }
 
-        _largeTransactions.Add($"{DateTime.Now:dd/MM/yyyy HH:mm} | {type} | {account.AccountNumber} | " +
-                               $"{account.OwnerName} | {Utils.FormatRupiah(amount)}");
-        Console.WriteLine($"[PERINGATAN] Transaksi besar terdeteksi: {type} {Utils.FormatRupiah(amount)} " +
-                          $"pada rekening {account.AccountNumber}");
+    private void ProcessOne(Account account)
+    {
+        if (IsBlocked(account.AccountNumber))
+        {
+            Console.WriteLine($"Rekening {account.AccountNumber} diblokir, proses akhir bulan dilewati.");
+            return;
+        }
+
+        account.ProcessMonthEnd();
     }
 }

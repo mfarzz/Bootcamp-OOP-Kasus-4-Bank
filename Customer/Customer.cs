@@ -2,32 +2,49 @@
 
 namespace PracticeBank.Class;
 
-public class Customer(string name, string customerId)
+public class Customer
 {
-    private readonly List<Account> _accounts = new();
-    public string CustomerId { get; } = customerId;
-    public string Name { get; set; } = name;
-    public IReadOnlyList<Account> Accounts => _accounts;
+    private readonly List<Account> accounts = new();
+
+    public Customer(string name, string customerId)
+    {
+        CustomerId = customerId;
+        Name = name;
+    }
+
+    public string CustomerId { get; private set; }
+    public string Name { get; set; }
+    public IReadOnlyList<Account> Accounts => accounts;
+    public int AccountCount => accounts.Count;
 
     public int TotalAssets
     {
         get
         {
             var total = 0;
-            foreach (var account in _accounts) total += account.Balance;
+            foreach (var account in accounts) total += account.Balance;
             return total;
         }
+    }
+    
+    public double AverageBalance()
+    {
+        if (accounts.Count == 0)
+        {
+            return 0;
+        }
+        return accounts.Average(a => a.Balance);
     }
 
     public bool AddAccount(Account? account)
     {
         if (account == null) return false;
 
-        foreach (var existing in _accounts)
+        foreach (var existing in accounts)
             if (existing.AccountNumber == account.AccountNumber)
                 return false;
 
-        _accounts.Add(account);
+        accounts.Add(account);
         return true;
     }
 
@@ -35,7 +52,7 @@ public class Customer(string name, string customerId)
     {
         Console.WriteLine($"Nasabah : {Name} ({CustomerId})");
         Console.WriteLine("Daftar Rekening");
-        if (_accounts.Count == 0)
+        if (accounts.Count == 0)
         {
             Console.WriteLine("Tidak ada rekening yang terdaftar");
             return;
@@ -44,9 +61,9 @@ public class Customer(string name, string customerId)
         Console.WriteLine("-------------------------------------------------------");
         Console.WriteLine("No.  | No. Rekening      | Pemilik   | Saldo");
         Console.WriteLine("-------------------------------------------------------");
-        for (var i = 0; i < _accounts.Count; i++)
+        for (var i = 0; i < accounts.Count; i++)
         {
-            var account = _accounts[i];
+            var account = accounts[i];
             Console.WriteLine(
                 $"{i + 1,-4} | {account.AccountNumber,-17} | {account.OwnerName,-9} | {Utils.FormatRupiah(account.Balance)}");
         }

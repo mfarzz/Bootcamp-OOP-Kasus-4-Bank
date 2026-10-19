@@ -8,7 +8,7 @@ public class TimeDeposit(string accountNumber, string ownerName, int balance, in
 {
     public int MonthsToMaturity { get; private set; } = monthsToMaturity;
 
-    public override void Withdraw(int amount)
+    public override bool Withdraw(int amount)
     {
         ValidateAmount(amount);
 
@@ -17,6 +17,7 @@ public class TimeDeposit(string accountNumber, string ownerName, int balance, in
 
         Balance -= amount;
         RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
+        return true;
     }
 
     public override int AnnualInterestRate()
@@ -29,6 +30,7 @@ public class TimeDeposit(string accountNumber, string ownerName, int balance, in
         return 0;
     }
 
+    // Tiap akhir bulan sisa tenor berkurang sehingga deposito akhirnya bisa ditarik
     public override void ProcessMonthEnd()
     {
         base.ProcessMonthEnd();

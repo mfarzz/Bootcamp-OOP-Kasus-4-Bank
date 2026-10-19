@@ -2,7 +2,7 @@
 
 public enum AccountType
 {
-    Saving,
+    Savings,
     Checking,
     TimeDeposit
 }

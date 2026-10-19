@@ -1,29 +1,42 @@
 ﻿namespace PracticeBank.Abstract;
 
-public abstract class Account(string accountNumber, string customerName, int balance)
+public abstract class Account
 {
-    private readonly List<string> _history = new();
+    public static int TotalAccounts = 0;
 
-    public string AccountNumber { get; } = accountNumber;
-    public string OwnerName { get; } = customerName;
-    public int Balance { get; protected set; } = balance;
-    public IReadOnlyList<string> History => _history;
+    private readonly List<string> history = new();
 
-    public void Deposit(int amount)
+    protected Account(string accountNumber, string ownerName, int balance)
+    {
+        AccountNumber = accountNumber;
+        OwnerName = ownerName;
+        Balance = balance;
+        TotalAccounts++;
+    }
+
+    public string AccountNumber { get; private set; }
+    public string OwnerName { get; }
+    public int Balance { get; protected set; }
+
+    // Setor 0 atau negatif melempar ArgumentException
+    public bool Deposit(int amount)
     {
         ValidateAmount(amount);
         Balance += amount;
         RecordHistory($"Deposit : {Utils.FormatRupiah(amount)}");
+        return true;
     }
 
-    public void Deposit(int amount, string note)
+    public bool Deposit(int amount, string note)
     {
         ValidateAmount(amount);
         Balance += amount;
         RecordHistory($"Deposit | {Utils.FormatRupiah(amount)} | {note}");
+        return true;
     }
 
-    public abstract void Withdraw(int amount);
+    // true jika berhasil; melempar InsufficientBalanceException / DepositLockedException / ArgumentException
+    public abstract bool Withdraw(int amount);
     public abstract int AnnualInterestRate();
     public abstract int AdminFee();
 
@@ -46,25 +59,25 @@ public abstract class Account(string accountNumber, string customerName, int bal
                           $"Saldo baru  : {Utils.FormatRupiah(Balance)}");
     }
 
+    protected void RecordHistory(string text)
+    {
+        history.Add(text);
+    }
+
     public void PrintStatement()
     {
-        if (_history.Count == 0)
+        if (history.Count == 0)
         {
             Console.WriteLine("Belum ada transaksi.");
             return;
         }
 
-        for (var i = 0; i < _history.Count; i++) Console.WriteLine($"{i + 1}. {_history[i]}");
+        for (var i = 0; i < history.Count; i++) Console.WriteLine($"{i + 1}. {history[i]}");
     }
 
     public virtual void Info()
     {
         Console.WriteLine($"Pemilik: {OwnerName} | {AccountNumber} | Saldo : {Utils.FormatRupiah(Balance)}");
-    }
-
-    protected void RecordHistory(string text)
-    {
-        _history.Add(text);
     }
 
     protected static void ValidateAmount(int amount)

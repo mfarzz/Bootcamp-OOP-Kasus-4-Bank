@@ -2,10 +2,11 @@
 
 namespace PracticeBank.Class;
 
+// T dibatasi hanya untuk Account atau turunannya
 public class Repository<TAccount> where TAccount : Account
 {
-    private readonly List<TAccount> _items = new();                     
-    private readonly Dictionary<string, TAccount> _byNumber = new();   
+    private readonly List<TAccount> _items = new();                      // menjaga urutan
+    private readonly Dictionary<string, TAccount> _byNumber = new();     // pencarian cepat lewat nomor rekening
 
     public int Count => _items.Count;
     public IReadOnlyList<TAccount> All => _items;

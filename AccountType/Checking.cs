@@ -8,9 +8,10 @@ public class Checking(string accountNumber, string ownerName, int balance)
 {
     public int OverdraftLimit { get; } = -1000000;
 
-    public override void Withdraw(int amount)
+    public override bool Withdraw(int amount)
     {
         Debit(amount, "Withdraw");
+        return true;
     }
 
     public bool Transfer(Account target, int amount)

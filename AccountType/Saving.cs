@@ -3,14 +3,17 @@ using PracticeBank.Exceptions;
 
 namespace PracticeBank.AccountType;
 
-public class Saving(string accountNumber, string ownerName, int balance)
+public class Savings(string accountNumber, string ownerName, int balance)
     : Account(accountNumber, ownerName, balance), ITransferable
 {
-    public int MinimumBalance { get; } = 50000;
+    public const int DefaultMinimumBalance = 50000;
 
-    public override void Withdraw(int amount)
+    public int MinimumBalance { get; } = DefaultMinimumBalance;
+
+    public override bool Withdraw(int amount)
     {
         Debit(amount, "Withdraw");
+        return true;
     }
 
     public bool Transfer(Account target, int amount)
