@@ -1,5 +1,6 @@
 ﻿using Bank.Abstract;
 using Bank.Class;
+using Bank.Exceptions;
 
 namespace Bank.AccountType;
 
@@ -7,6 +8,7 @@ public class Saving(string accountNumber, string ownerName, int balance)
     : Account(accountNumber, ownerName, balance), ITransferable
 {
     public int MinimumBalance = 50000;
+    public override string Type { get; protected set; } = "Saving";
 
     public bool Transfer(Account target, int amount)
     {
@@ -17,11 +19,11 @@ public class Saving(string accountNumber, string ownerName, int balance)
         } 
         if (Balance - amount < MinimumBalance)
         {
-            Console.WriteLine($"Saldo minimal: Rp. {Utils.FormatRupiah(MinimumBalance)}");
-            return false;
+            throw new InsufficientBalanceException("InsufficientBalance", Balance, amount);
         }
+        
         Balance -= amount;
-        RecordHistory($"Transfer Out : {Utils.FormatRupiah(amount)}");
+        RecordHistory(amount, Balance, "Transfer out");
         target.Deposit(amount);
         return true;
     }
@@ -35,11 +37,10 @@ public class Saving(string accountNumber, string ownerName, int balance)
         } 
         if (Balance - amount < MinimumBalance)
         {
-            Console.WriteLine($"Saldo minimal: Rp. {Utils.FormatRupiah(MinimumBalance)}");
-            return false;
+            throw new InsufficientBalanceException("InsufficientBalance", Balance, amount);
         }
         Balance -= amount;
-        RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
+        RecordHistory(amount, Balance, "Withdraw");
         return true;
     }
 

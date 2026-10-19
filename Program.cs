@@ -1,114 +1,264 @@
 using Bank.AccountType;
 using Bank.Class;
+using Bank.Exceptions;
 using Bank.Feature;
 
 namespace Bank;
 
 class Program
 {
-    static Features features = new Features();
-    
-    static Customer c1 = new Customer("Abiem", "CUST01");
-    static Customer c2 = new Customer("Fariz", "CUST02");
-    static Customer[] allCustomers = { c1, c2 };
-
-    private static Saving sa1 = new Saving("sa-01", c1, 200000);
-    private static Checking ca1 = new Checking("ca-01", c1, 1500000);
-    private static TimeDeposit tda1 = new TimeDeposit("tda-01", c1, 10000000);
-    
-    private static Saving sa2 = new Saving("sa-02", c2, 150000);
-    private static Checking ca2 = new Checking("ca-02", c2, 800000);
-    private static TimeDeposit tda2 = new TimeDeposit("tda-02", c2, 2000000);
-    
     static void Main(string[] args)
     {
-        c1.AddAccount(sa1);
-        c1.AddAccount(ca1);
-        c1.AddAccount(tda1);
-        
-        c2.AddAccount(sa2);
-        c2.AddAccount(ca2);
-        c2.AddAccount(tda2);
-        
+        Class.Bank bank = new Class.Bank();
+        Features features = new Features(bank);
+
         // Coba atur saldo dari luar kelas
         // c1.Accounts[0].Balance = 20000;
 
         while (true)
         {
             Console.Clear();
-            Customer currentUser = PickUser();
-            while (true)
+            ShowMenu();
+            var option = GetOption();
+            Console.WriteLine("=============================");
+            switch (option)
             {
-                Console.Clear();
-                ShowMenu();
-                var option = GetOption();
-                Console.WriteLine("=============================");
-                switch (option)
-                {
-                    case "1":
-                        features.Profil(currentUser);
-                        break;
-                    case "2":
-                        features.Deposit(currentUser);
-                        break;
-                    case "3":
-                        features.Withdraw(currentUser);
-                        break;
-                    case "4":
-                        features.Transfer(currentUser, allCustomers);
-                        break;
-                    case "5":
-                        features.PrintMutation(currentUser);
-                        break;
-                    case "6":
-                        features.EndMonthProcess(currentUser);
-                        break;
-                    case "7":
-                        features.AddAccount(currentUser);
-                        break;
-                    case "0":
-                        break;
-                    case "x":
-                        Console.WriteLine("Thank you, have a nice day!");
-                        return;
-                    default:
-                        Console.WriteLine("Opsi Invalid.");
-                        break;
-                }
+                case "1":
+                    // Cetak profil seluruh user
+                    try
+                    {
+                        features.Profil();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
 
-                if (option == "0")
-                {
                     break;
-                }
-
-                Console.WriteLine("===== Enter to continue =====");
-                Console.ReadLine();
+                case "2":
+                    // deposit
+                    try
+                    {
+                        features.Deposit();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid.");
+                    }
+                    catch (ArithmeticException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
+                    break;
+                case "3":
+                    // withdraw
+                    try
+                    {
+                        features.Withdraw();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid");
+                    }
+                    catch (InsufficientBalanceException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (DepositLockException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
+                    break;
+                case "4":
+                    // transfer
+                    try
+                    {
+                        features.Transfer();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid");
+                    }
+                    catch (InsufficientBalanceException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (DepositLockException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
+                    break;
+                case "5":
+                    // print mutation
+                    try
+                    {
+                        features.PrintMutation();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid");
+                    }
+                    catch (InsufficientBalanceException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (DepositLockException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
+                    break;
+                case "6":
+                    // process end month
+                    try
+                    {
+                        features.EndMonthProcess();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid");
+                    }
+                    catch (InsufficientBalanceException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (DepositLockException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
+                    break;
+                case "7":
+                    // add account
+                    try
+                    {
+                        features.AddAccount();
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Input must be an integer.");
+                    }
+                    catch (OverflowException e)
+                    {
+                        Console.WriteLine("Input is too big.");
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Console.WriteLine("Input invalid");
+                    }
+                    catch (InsufficientBalanceException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (DepositLockException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Other exception: " + e.Message);
+                    }
+                    break;
+                case "8":
+                    features.PrintBalancePerType();
+                    break;
+                case "9":
+                    features.PrintCustomerWithHighestAssets();
+                    break;
+                case "0":
+                    break;
+                case "x":
+                    Console.WriteLine("Thank you, have a nice day!");
+                    return;
+                default:
+                    Console.WriteLine("Opsi Invalid.");
+                    break;
             }
-        }
-    }
 
-    private static Customer PickUser()
-    {
-        while (true)
-        {
-            Console.WriteLine($"Registered Customer:\n1. {c1.Name}\n2. {c2.Name}\n3. Total Account");
-            Console.Write("Pick user: ");
-            var  input = Console.ReadLine();
-            if (input == "1")
+            if (option == "0")
             {
-                return c1;
-            } 
-            if (input == "2")
-            {
-                return c2;
+                break;
             }
+
+            Console.WriteLine("===== Enter to continue =====");
+            Console.ReadLine();
         }
     }
 
     private static void ShowMenu()
     {
         Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw \n4. Transfer");
-        Console.WriteLine("5. Print Mutation\n6. End Month Process\n" + 
+        Console.WriteLine("5. Print Mutation\n6. End Month Process\n" +
                           "7. Add Account\n0. Switch User\nx. Exit");
         Console.Write("Select an option: ");
     }

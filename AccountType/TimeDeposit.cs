@@ -1,5 +1,6 @@
 ﻿using Bank.Abstract;
 using Bank.Class;
+using Bank.Exceptions;
 
 namespace Bank.AccountType;
 
@@ -7,6 +8,7 @@ public class TimeDeposit(string accountNumber, string ownerName, int balance, in
     : Account(accountNumber, ownerName, balance)
 {
     public int MonthsToMaturity = monthsToMaturity;
+    public override string Type { get; protected set; } = "Time Deposit";
     
     public override bool Withdraw(int amount)
     {
@@ -17,11 +19,10 @@ public class TimeDeposit(string accountNumber, string ownerName, int balance, in
         } 
         if (MonthsToMaturity > 0)
         {
-            Console.WriteLine($"Jatuh tempo (dalam bulan) : {MonthsToMaturity}");
-            return false;
+            throw new DepositLockException($"Wait for : {MonthsToMaturity} months to withdraw.");
         }
         Balance -= amount;
-        RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
+        RecordHistory(amount, Balance, "Withdraw");
         return true;
     }
 

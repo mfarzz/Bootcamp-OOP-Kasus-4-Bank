@@ -7,111 +7,116 @@ namespace Bank.Feature;
 
 public class Features
 {
-    // Menu 1
-    public void Profil(Customer customer)
+    private Class.Bank _bank;
+
+    public Features(Class.Bank bank)
     {
-        customer.PrintProfile();
+        _bank = bank;
+    }
+
+    // Menu 1
+    public void Profil()
+    {
+        var customers =  _bank.GetAllCustomers();
+        foreach (var customer in customers)
+        {
+            customer.PrintProfile();
+            Console.WriteLine("==================================");
+        }
+        // var customer = PickCustomer();
+        // customer.PrintProfile();
     }
 
     // Menu 2
-    public void Deposit(Customer customer)
+    public void Deposit()
     {
-        Account? account = PickAccount(customer);
-        if (account == null) return;
+        var customer = PickCustomer();
+        var account = PickAccount(customer);
 
-        double? amount = ReadAmount("Jumlah deposit: Rp ");
-        if (amount == null) return;
+        if (account == null)
+        {
+            Console.WriteLine("Account not found.");
+            return;
+        }
 
-        if (!account.Deposit(amount.Value))
+        int amount = ReadAmount("Jumlah deposit: Rp ");
+
+        if (!account.Deposit(amount))
         {
             Console.WriteLine("Deposit gagal.");
             return;
         }
-        Console.WriteLine($"Deposit berhasil. Saldo sekarang: Rp. {account.GetBalance():N}");
+
+        Console.WriteLine($"Deposit berhasil. Saldo sekarang: Rp. {account.Balance:N}");
     }
 
     // Menu 3
-    public void Withdraw(Customer customer)
+    public void Withdraw()
     {
-        Account? account = PickAccount(customer);
-        if (account == null) return;
-
-        double? amount = ReadAmount("Jumlah penarikan: Rp ");
-        if (amount == null) return;
-
-        // return bisa diganti string pesan error
-        if (!account.Withdraw(amount.Value))
+        var customer = PickCustomer();
+        var account = PickAccount(customer);
+        if (account == null)
+        {
+            Console.WriteLine("Account not found.");
+            return;
+        }
+        int amount = ReadAmount("Jumlah penarikan: Rp ");
+    
+        if (!account.Withdraw(amount))
         {
             Console.WriteLine("Penarikan gagal.");
             return;
         }
         
-        Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp. {account.GetBalance():N}");
+        Console.WriteLine($"Penarikan berhasil. Saldo sekarang: Rp. {account.Balance:N}");
     }
-    
+
     //Menu 4
-    public void Transfer(Customer sender, Customer[] allCustomers)
+    public void Transfer()
     {
-        Account? source;
-        ITransferable transferable;
-            
-        while (true)
+        var sourceCustomer = PickCustomer();
+        var sourceAccount = PickAccount(sourceCustomer);
+
+        if (sourceAccount == null)
         {
-            source =  PickAccount(sender);
-            if (source == null) return;
-            if (source is  ITransferable t)
-            {
-                transferable = t;
-                break;
-            }
-            Console.WriteLine("Jenis rekening ini tidak mendukung metode transfer.");
-            Console.WriteLine("Silakan pilih rekening lain.\n");
-        }
-
-        (Account destination, Customer owner) foundAccount;
-
-        while (true)
-        {
-            Console.Write("Nomor Rekening Tujuan: ");
-            string? destNumber = Console.ReadLine();
-            
-            var found = FindAccount(destNumber, allCustomers);
-            if (found == null)
-            {
-                Console.WriteLine("Rekening tujuan tidak ditemukan");
-                Console.WriteLine("Silahkan inputkan kembali \n");
-                continue;
-            }
-            
-            if (found.Value.Item1 == source)
-            {
-                Console.WriteLine("Rekening tujuan tidak boleh sama dengan rekening asal");
-                Console.WriteLine("Silahkan inputkan kembali \n");
-                continue;
-            }
-            foundAccount = found.Value;
-            break;
-        }
-
-        (Account destination, Customer owner) = foundAccount;
-        
-        double? ammount = ReadAmount("Jumlah transefer: Rp ");
-        if(ammount == null) return;
-
-        if (!transferable.TransferTo(destination, ammount.Value))
-        {
-            Console.WriteLine("Transfer gagal. Saldo tidak mencukupi atau batas rekening terlampaui");
+            Console.WriteLine("Account not found.");
             return;
         }
+        
+        if (sourceAccount is not ITransferable transferable)
+        {
+            Console.WriteLine("Account is not able to transfer.");
+            return;
+        }
+        
+        var destCustomer = PickCustomer();
+        var destAccount = PickAccount(destCustomer);
 
-        Console.WriteLine("===========BUKTI TRANSFER==========");
-        Console.WriteLine($"Transfer Rp{ammount.Value:N} ke {owner.Name} ({destination.AccountNumber}) berhasil");
-        Console.WriteLine($"Saldo rekening asal sekarang: Rp{source.GetBalance():N}");
-    }
+        if (destAccount == null)
+        {
+            Console.WriteLine("Account not found.");
+            return;
+        }
+        
+        if (sourceAccount == destAccount)
+        {
+            Console.WriteLine("Cannot transfer to the same account.");
+            return;
+        }
+        
+        int amount = ReadAmount("Jumlah transefer: Rp ");
+
+        transferable.Transfer(destAccount, amount);
     
+        Console.WriteLine("===========BUKTI TRANSFER==========");
+        Console.WriteLine($"Transfer Rp{amount:N} ke {destCustomer.Name} ({destAccount.AccountNumber}) berhasil");
+        Console.WriteLine($"Saldo rekening asal sekarang: Rp{sourceAccount.Balance:N}");
+    }
+
     // Menu 5
-    public void PrintMutation(Customer customer)
+    public void PrintMutation()
     {
+        var customer = PickCustomer();
         Account? acc = PickAccount(customer);
         if (acc == null)
         {
@@ -120,47 +125,44 @@ public class Features
         }
         acc.PrintStatement();
     }
-    
+
     // Menu 6
-    public void EndMonthProcess(Customer customer)
+    public void EndMonthProcess()
     {
-        var accounts =  customer.Accounts;
+        var accounts = _bank.GetAllAccounts();
         foreach (var acc in accounts)
         {
-            acc?.ApplyEndMonth();
+            acc.ProcessMonthEnd();
         }
     }
-    
-    // Menu 7
-    public void AddAccount(Customer customer)
+
+    // // Menu 7
+    public void AddAccount()
     {
-        if (customer.AccountCount == 5)
-        {
-            Console.WriteLine($"Jumlah akun mencapai maksimal: {customer.AccountCount}");
-            return;
-        }
+        var customer = PickCustomer();
+        
         var accountType = PickAccountType();
         var accNumber = GenerateNumber(5);
         var initialBalance = GetInputBalance();
-
+    
         Account acc;
         
         switch (accountType)
         {
             case Abstract.AccountType.Saving:
-                acc = new Saving(accNumber, customer, initialBalance);
+                acc = new Saving(accNumber, customer.Name, initialBalance);
                 break;
             case Abstract.AccountType.Checking:
-                acc = new Checking(accNumber, customer, initialBalance);
+                acc = new Checking(accNumber, customer.Name, initialBalance);
                 break;
             case Abstract.AccountType.TimeDeposit:
-                acc = new TimeDeposit(accNumber, customer, initialBalance);
+                acc = new TimeDeposit(accNumber, customer.Name, initialBalance, 6);
                 break;
             default:
                 Console.WriteLine("Input Invalid");
                 return;
         }
-
+    
         if (!customer.AddAccount(acc))
         {
             Console.WriteLine("Gagal membuat akun baru.");
@@ -170,61 +172,77 @@ public class Features
         Console.WriteLine($"Akun berhasil dibuat. Saldo : {initialBalance:N}");
     }
     
+    // Menu 8
+    public void BlockAccount()
+    {
+        
+    }
+
     private Account? PickAccount(Customer customer)
     {
-        if (customer.AccountCount == 0)
+        var accounts =  customer.GetAccounts();
+        if (accounts.Count == 0)
         {
             Console.WriteLine("Nasabah belum memiliki rekening.");
             return null;
         }
 
         Console.WriteLine("Pilih rekening:");
-        for (int i = 0; i < customer.AccountCount; i++)
+
+        var i = 1;
+        foreach (var acc in accounts)
         {
-            Account acc = customer.Accounts[i];
-            Console.WriteLine($"    {i + 1}. {acc.AccountNumber} | Rp. {acc.GetBalance():N}");
+            Console.WriteLine($"    {i}. {acc.AccountNumber} | Rp. {acc.Balance:N}");
+            i++;
         }
 
         Console.Write("Nomor rekening: ");
-        if (int.TryParse(Console.ReadLine(), out int index)
-            && index >= 1 && index <= customer.AccountCount)
-        {
-            return customer.Accounts[index - 1];
-        }
+        var input = Console.ReadLine();
 
-        Console.WriteLine("Pilihan rekening tidak valid.");
-        return null;
+        Account? account = accounts.Find(acc => acc.AccountNumber == input);
+
+        return account;
     }
 
-    private double? ReadAmount(string input)
+    /**
+     * Exception thrown:
+     * FormatException, OverflowException, ArithMeticException
+     */
+    private int ReadAmount(string prompt)
     {
-        Console.Write(input);
-        if (double.TryParse(Console.ReadLine(), out double amount) && amount > 0)
+        Console.Write(prompt);
+        var input = Console.ReadLine();
+        var result = Convert.ToInt32(input);
+        if (result <= 0)
         {
-            return amount;
+            throw new ArithmeticException("Input must be greater than zero.");
         }
 
-        Console.WriteLine("Jumlah tidak valid. Harus berupa angka lebih dari 0.");
-        return null;
+        return result;
     }
-    
-    private (Account, Customer)? FindAccount(string? accountNumber, Customer[] customers)
+
+    private void PrintAllAccount()
     {
-        if (string.IsNullOrWhiteSpace(accountNumber)) return null;
-
-        foreach (Customer customer in customers)
-        {
-            for (int i = 0; i < customer.AccountCount; i++)
-            {
-                if (customer.Accounts[i].AccountNumber == accountNumber.Trim())
-                {
-                    return (customer.Accounts[i], customer);
-                }
-            }
-        }
-        return null;
+        
     }
-    
+
+    public void PrintBalancePerType()
+    {
+        _bank.BalancePerAccountType();
+    }
+
+    public void PrintCustomerWithHighestAssets()
+    {
+        var c = _bank.CustomerWithHighestAssets();
+        if (c == null)
+        {
+            Console.WriteLine("Customer not found.");
+            return;
+        }
+
+        Console.WriteLine($"Customer with highest assets\n{c.Name} | Total assets: {c.TotalAssets}");
+    }
+
     private Abstract.AccountType PickAccountType()
     {
         while (true)
@@ -246,38 +264,55 @@ public class Features
                     break;
             }
         }
-
     }
-    
+
     private string GenerateNumber(int length)
     {
         Random random = new Random();
         StringBuilder result = new StringBuilder(length);
-        
+
         for (int i = 0; i < length; i++)
         {
             // Generate random 1-9 digit
             int digit = random.Next(0, 10);
             result.Append(digit);
         }
-        
+
         return result.ToString();
     }
-    
-    private double GetInputBalance()
+
+    private int GetInputBalance()
     {
         while (true)
         {
             Console.Write("Saldo awal: ");
             var input = Console.ReadLine();
-            try
+            return Convert.ToInt32(input);
+        }
+    }
+
+    /**
+     * Exception thrown:
+     * Format, Overflow, ArgumentOutOfRange
+     */
+    private Customer PickCustomer()
+    {
+        var customers = _bank.GetAllCustomers();
+        while (true)
+        {
+            Console.WriteLine("Registered Customer:");
+            var i = 1;
+            foreach (var customer in customers)
             {
-                return Convert.ToDouble(input);
+                Console.WriteLine($"{i}. {customer.Name}");
+                i++;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("Input invalid.");
-            }
+
+            Console.Write("Pick user: ");
+
+            var input = Console.ReadLine();
+            var index = Convert.ToInt32(input) - 1;
+            return customers[index];
         }
     }
 }

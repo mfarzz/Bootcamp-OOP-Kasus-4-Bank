@@ -7,19 +7,15 @@ public abstract class Account(string accountNumber, string customerName, int bal
     public static int TotalAccount = 0;
     public string AccountNumber { get; private set; } = accountNumber;
     public string OwnerName = customerName;
-    public int Balance { get; set; } = balance;
-    private string[] _history = new string[10];
-    private int historyCount;
-    // protected abstract double YearlyInterest { get; }
-    // protected abstract double MonthlyFee { get; }
-    // public abstract string AccountType { get; }
-    // private static readonly int MaxHistory = 10;
+    public int Balance { get; protected set; } = balance;
+    private List<Transaction> _history = new();
+    public abstract string Type {get; protected set;}
 
     public bool Deposit(int amount)
     {
         if (amount <= 0) return false;
         Balance += amount;
-        RecordHistory($"Deposit : {Utils.FormatRupiah(amount)}");
+        RecordHistory(amount, Balance, "Deposit");
         return true;
     }
 
@@ -27,7 +23,7 @@ public abstract class Account(string accountNumber, string customerName, int bal
     {
         if (amount <= 0) return false;
         Balance += amount;
-        RecordHistory($"Deposit | {Utils.FormatRupiah(amount)} | {note}");
+        RecordHistory(amount, Balance, "Deposit");
         return true;
     }
 
@@ -41,9 +37,9 @@ public abstract class Account(string accountNumber, string customerName, int bal
         // ReSharper disable once PossibleLossOfFraction
         int monthlyInterest = AnnualInterestRate()/12;
         Balance += monthlyInterest;
-        RecordHistory($"Monthly Interest | {Utils.FormatRupiah(monthlyInterest)} | Balance : {Utils.FormatRupiah(Balance)}");
+        RecordHistory(monthlyInterest, Balance, "Monthly Interest");
         Balance -= AdminFee();
-        RecordHistory($"Monthly Fee | {Utils.FormatRupiah(AdminFee())} | Balance : {Balance}");
+        RecordHistory(AdminFee(), Balance, "Admin Fee");
         
         Console.WriteLine("==================================");
         Console.WriteLine($"Update bulanan untuk : {OwnerName} | {AccountNumber}");
@@ -52,21 +48,19 @@ public abstract class Account(string accountNumber, string customerName, int bal
         
     }
     
-    protected void RecordHistory(string text)
+    protected void RecordHistory(int amount, int balanceAfter, string type)
     {
-        for (var i = 0; i < _history.Length - 1; i++)
-        {
-            _history[i] = _history[i + 1];
-        }
-
-        _history[9] = text;
+        var tr = new Transaction(amount, balanceAfter, DateTime.Now ,type);
+        _history.Add(tr);
     }
 
     public void PrintStatement()
     {
-        foreach (var transaction in _history)
+        var tr = _history.OrderByDescending(t => t.Date)
+            .Take(10);
+        foreach (var transaction in tr)
         {
-            Console.WriteLine(transaction);
+            transaction.PrintTransaction();
         }
     }
 

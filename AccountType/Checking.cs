@@ -1,5 +1,6 @@
 ﻿using Bank.Abstract;
 using Bank.Class;
+using Bank.Exceptions;
 
 namespace Bank.AccountType;
 
@@ -7,7 +8,9 @@ public class Checking(string accountNumber, string ownerName, int balance)
     : Account(accountNumber, ownerName, balance), ITransferable
 {
     public int OverdraftLimit = -1000000;
-    
+
+    public override string Type { get; protected set; } = "Checking";
+
     public override bool Withdraw(int amount)
     {
         if (amount <= 0)
@@ -17,11 +20,10 @@ public class Checking(string accountNumber, string ownerName, int balance)
         } 
         if (Balance - amount < OverdraftLimit)
         {
-            Console.WriteLine($"Penarikan melebihi limit overdraft : Rp. {OverdraftLimit}");
-            return false;
+            throw new InsufficientBalanceException($"Penarikan melebihi limit overdraft : Rp. {OverdraftLimit}", Balance, amount);
         }
         Balance -= amount;
-        RecordHistory($"Withdraw : {Utils.FormatRupiah(amount)}");
+        RecordHistory(amount, Balance, "Withdraw");
         return true;
     }
 
@@ -49,7 +51,7 @@ public class Checking(string accountNumber, string ownerName, int balance)
         }
         Balance -= amount;
         target.Deposit(amount);
-        RecordHistory($"Transfer Out : {Utils.FormatRupiah(amount)}");
+        RecordHistory(amount, Balance, "Transfer out");
         return true;
     }
 }

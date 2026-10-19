@@ -6,52 +6,33 @@ public class Customer
 {
     public string CustomerId { get; private set; }
     public string Name { get; set; }
-    private Account[] accounts = new Account[3];
-    private int accountCount;
+    private List<Account> accounts;
 
     public int TotalAssets
     {
-        get
-        {
-            int total = 0;
-            for (int i = 0; i < accountCount; i++)
-            {
-                total += accounts[i].Balance;
-            }
-            return total;
-        }
+        get { return accounts.Sum(a => a.Balance); }
     }
 
     public Customer(string name, string customerId)
     {
+        accounts = new List<Account>();
         CustomerId = customerId;
         Name = name;
-        accountCount = 0;
     }
 
     public bool AddAccount(Account? account)
     {
         if (account == null) return false;
-        
-        if (accountCount >= accounts.Length) return false;
-    
-        for (int i = 0; i < accountCount; i++)
-        {
-            if (accounts[i].AccountNumber == account.AccountNumber)
-            {
-                return false;
-            }
-        }
-        accounts[accountCount] = account;
-        accountCount++;
-        
+
+        accounts.Add(account);
         return true;
     }
+
     public void PrintProfile()
     {
         Console.WriteLine($"Nasabah : {Name}");
         Console.WriteLine("Daftar Rekening");
-        if (accountCount == 0)
+        if (accounts.Count < 0)
         {
             Console.WriteLine("Tidak ada rekening yang terdaftar");
             return;
@@ -60,14 +41,18 @@ public class Customer
         Console.WriteLine("-------------------------------------------------------");
         Console.WriteLine("No.  | No. Rekening      | Pemilik   | Saldo");
         Console.WriteLine("-------------------------------------------------------");
-        for (int i = 0; i < accountCount; i++)
+        var i = 1;
+        foreach (var acc in accounts)
         {
-            Account account = accounts[i];
-            Console.WriteLine($"{i + 1, -4}. {account.AccountNumber, -17} | {Name, -9} | {Utils.FormatRupiah(account.Balance)}");
+            Console.WriteLine($"{i}. {acc.AccountNumber,-17} | {Name,-9} | {Utils.FormatRupiah(acc.Balance)}");
         }
 
         Console.WriteLine("-------------------------------------------------------");
         Console.WriteLine($"Total aset : {Utils.FormatRupiah(TotalAssets)}");
     }
-    
+
+    public List<Account> GetAccounts()
+    {
+        return accounts;
+    }
 }
