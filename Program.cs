@@ -171,7 +171,7 @@ class Program
                     // process end month
                     try
                     {
-                        features.EndMonthProcess();
+                        features.EndMonthProcess().Wait();
                     }
                     catch (FormatException e)
                     {

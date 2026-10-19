@@ -37,7 +37,7 @@ public class Checking(string accountNumber, string ownerName, int balance)
         return 25000;
     }
 
-    public bool Transfer(Account target, int amount)
+    public async Task<bool> Transfer(Account target, int amount, CancellationToken ct)
     {
         if (amount <= 0)
         {
@@ -49,6 +49,10 @@ public class Checking(string accountNumber, string ownerName, int balance)
             Console.WriteLine($"Penarikan melebihi limit overdraft : Rp. {OverdraftLimit}");
             return false;
         }
+        
+        ct.ThrowIfCancellationRequested();
+        await Task.Delay(500, ct); // simulasi delay
+        
         Balance -= amount;
         target.Deposit(amount);
         RecordHistory(amount, Balance, "Transfer out");

@@ -72,7 +72,7 @@ public class Features
     }
 
     //Menu 4
-    public void Transfer()
+    public async Task Transfer()
     {
         var sourceCustomer = PickCustomer();
         var sourceAccount = PickAccount(sourceCustomer);
@@ -106,11 +106,26 @@ public class Features
         
         int amount = ReadAmount("Jumlah transefer: Rp ");
 
-        transferable.Transfer(destAccount, amount);
-    
-        Console.WriteLine("===========BUKTI TRANSFER==========");
-        Console.WriteLine($"Transfer Rp{amount:N} ke {destCustomer.Name} ({destAccount.AccountNumber}) berhasil");
-        Console.WriteLine($"Saldo rekening asal sekarang: Rp{sourceAccount.Balance:N}");
+        CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(1000);
+
+        var isSent = false;
+        try
+        {
+            isSent = await transferable.Transfer(destAccount, amount, cts.Token);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        if (isSent)
+        {
+            Console.WriteLine("===========BUKTI TRANSFER==========");
+            Console.WriteLine($"Transfer Rp{amount:N} ke {destCustomer.Name} ({destAccount.AccountNumber}) berhasil");
+            Console.WriteLine($"Saldo rekening asal sekarang: Rp{sourceAccount.Balance:N}");
+        }
+        cts.Dispose();
     }
 
     // Menu 5
@@ -127,12 +142,18 @@ public class Features
     }
 
     // Menu 6
-    public void EndMonthProcess()
+    public async Task EndMonthProcess()
     {
         var accounts = _bank.GetAllAccounts();
-        foreach (var acc in accounts)
+        var tasks = accounts.Select(a => a.ProcessMonthEnd());
+        var enumerable = tasks.ToList();
+        await Task.WhenAll(enumerable);
+        
+        var messages = enumerable.Select(t => t.Result);
+
+        foreach (var message in messages)
         {
-            acc.ProcessMonthEnd();
+            Console.WriteLine(message);
         }
     }
 

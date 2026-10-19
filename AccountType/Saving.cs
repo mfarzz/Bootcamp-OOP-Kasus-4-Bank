@@ -10,7 +10,7 @@ public class Saving(string accountNumber, string ownerName, int balance)
     public int MinimumBalance = 50000;
     public override string Type { get; protected set; } = "Saving";
 
-    public bool Transfer(Account target, int amount)
+    public async Task<bool> Transfer(Account target, int amount, CancellationToken ct)
     {
         if (amount <= 0)
         {
@@ -21,6 +21,9 @@ public class Saving(string accountNumber, string ownerName, int balance)
         {
             throw new InsufficientBalanceException("InsufficientBalance", Balance, amount);
         }
+        
+        ct.ThrowIfCancellationRequested();
+        await Task.Delay(500, ct);
         
         Balance -= amount;
         RecordHistory(amount, Balance, "Transfer out");
