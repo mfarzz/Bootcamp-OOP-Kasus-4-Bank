@@ -79,6 +79,12 @@ class Program
                     case "10":
                         Features.ShowAverageBalance(currentUser);
                         break;
+                    case "11":
+                        Features.EndMonthProcessAsync(bank).Wait();
+                        break;
+                    case "12":
+                        Features.TransferInterbankAsync(bank, currentUser).Wait();
+                        break;
                     case "0":
                         break;
                     case "x":
@@ -127,7 +133,8 @@ class Program
         Console.WriteLine("Menu:\n1. Profile\n2. Deposit\n3. Withdraw\n4. Transfer");
         Console.WriteLine("5. Print Mutation\n6. End Month Process\n7. Add Account");
         Console.WriteLine("8. Blokir / Buka Blokir Rekening\n9. Transaksi Besar");
-        Console.WriteLine("10. Rata rata saldo semua rekening\n0. Switch User\nx. Exit");
+        Console.WriteLine("10. Rata rata saldo semua rekening\n11. End Mount Process Async All");
+        Console.WriteLine("12. Transfer Antar Bank\n0. Switch User\nx. Exit");
         Console.Write("Select an option: ");
     }
 }

@@ -84,4 +84,9 @@ public abstract class Account
     {
         if (amount <= 0) throw new ArgumentException("Jumlah harus lebih dari 0.");
     }
+
+    protected static async Task SimulateInterbankLatencyAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(Random.Shared.Next(1000, 6000), cancellationToken);
+    }
 }

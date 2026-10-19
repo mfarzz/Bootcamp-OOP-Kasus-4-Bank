@@ -21,6 +21,15 @@ public class Checking(string accountNumber, string ownerName, int balance)
         return true;
     }
 
+    public async Task<bool> TransferInterbankAsync(string bankName, string destinationAccountNumber, int ammount,
+        CancellationToken cancellationToken)
+    {
+        CanDebit(ammount);
+        await SimulateInterbankLatencyAsync(cancellationToken);
+        Debit(ammount, $"Transfer antar bank ke {bankName} ({destinationAccountNumber})");
+        return true;
+    }
+
     public override int AnnualInterestRate()
     {
         return 0;
@@ -33,13 +42,16 @@ public class Checking(string accountNumber, string ownerName, int balance)
 
     private void Debit(int amount, string label)
     {
-        ValidateAmount(amount);
+        CanDebit(amount);
+        Balance -= amount;
+        RecordHistory($"{label} : {Utils.FormatRupiah(amount)}");
+    }
 
+    private void CanDebit(int amount)
+    {
+        ValidateAmount(amount);
         if (Balance - amount < OverdraftLimit)
             throw new InsufficientBalanceException(Balance, amount,
                 $"Limit overdraft {Utils.FormatRupiah(OverdraftLimit)}.");
-
-        Balance -= amount;
-        RecordHistory($"{label} : {Utils.FormatRupiah(amount)}");
     }
 }

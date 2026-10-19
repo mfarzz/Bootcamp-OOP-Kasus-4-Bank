@@ -33,6 +33,18 @@ public class Bank
         foreach (var account in customer.Accounts) ProcessOne(account);
     }
 
+    // Untuk seluruh nasabah
+    public Task ProcessMonthEndAsync()
+    {
+        return ProcessManyAsync(accounts.All);
+    }
+
+    private Task ProcessManyAsync(IEnumerable<Account> target)
+    {
+        var tasks = target.Select(accounts => Task.Run(() => ProcessOne(accounts))).ToList();
+        return Task.WhenAll(tasks);
+    }
+
     // Daftarkan rekening baru ke nasabah sekaligus ke daftar rekening bank
     public bool OpenAccount(Customer customer, Account account)
     {

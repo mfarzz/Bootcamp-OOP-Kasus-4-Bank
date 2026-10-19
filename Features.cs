@@ -7,6 +7,8 @@ namespace PracticeBank.Feature;
 
 public static class Features
 {
+    private static readonly TimeSpan InterbankTimeout = TimeSpan.FromSeconds(3);
+    
     // Menu 1
     public static void Profil(Customer customer)
     {
@@ -232,6 +234,69 @@ public static class Features
             + Utils.FormatRupiah((int)Math.Round(customer.AverageBalance())));
     }
 
+    // Menu 11: Untuk semua nasabah
+    public static async Task EndMonthProcessAsync(Bank bank)
+    {
+        if (bank.Accounts.Count == 0)
+        {
+            Console.WriteLine("Tidak ada rekening terdaftar saat ini.");
+            return;
+        }
+
+        await bank.ProcessMonthEndAsync();
+    }
+    
+    // Menu 12: Transfer antar bank
+    public static async Task TransferInterbankAsync(Bank bank, Customer customer)
+    {
+        Account source;
+        ITransferable transferable;
+        while (true)
+        {
+            var picked =  PickAccount(customer.Accounts, bank);
+            if (picked == null) return;
+
+            if (picked is ITransferable t)
+            {
+                source = picked;
+                transferable = t;
+                break;
+            }
+
+            Console.WriteLine("Jenis rekening ini tidak mendukung metode transfer");
+            Console.WriteLine("Silahkan pilih rekening yang lain \n");
+        }
+
+        Console.Write("Nama bank tujuan: ");
+        var bankName = Console.ReadLine()?.Trim();
+        Console.Write("Nomor rekening tujuan: ");
+        var destinationNumber = Console.ReadLine()?.Trim();
+
+        if (string.IsNullOrEmpty(bankName) || string.IsNullOrEmpty(destinationNumber))
+        {
+            Console.WriteLine("Nama bank dan nomor rekening tujuan wajib diisi");
+        }
+
+        var amount = ReadAmount("Jumlah transfer: Rp ");
+        if (amount == null) return;
+        
+        using var cts = new CancellationTokenSource(InterbankTimeout);
+        Console.WriteLine($"Memproses transfer ke {bankName} (batas waktu {InterbankTimeout.TotalSeconds:0} detik)...");
+
+        var ok = await TryRunAsync(() =>
+        {
+            bank.EnsureNotBlocked(source);
+            return transferable.TransferInterbankAsync(bankName, destinationNumber, amount.Value, cts.Token);
+        });
+        
+        if(!ok) return;
+        
+        bank.RecordTransaction("Transfer Antar Bank", source, amount.Value);
+        Console.WriteLine("=========== BUKTI TRANSFER ANTAR BANK ==========");
+        Console.WriteLine($"Transfer {Utils.FormatRupiah(amount.Value)} ke {bankName} ({destinationNumber}) berhasil");
+        Console.WriteLine($"Saldo rekening asal sekarang: {Utils.FormatRupiah(source.Balance)}");
+    }
+    
     // Menjalankan transaksi dan menerjemahkan exception menjadi pesan untuk pengguna
     private static bool TryRun(Func<bool> transaction)
     {
@@ -259,6 +324,35 @@ public static class Features
         Console.WriteLine("Transaksi gagal.");
         return false;
     }
+    
+    private static async Task<bool> TryRunAsync(Func<Task<bool>> transaction)
+    {
+        try
+        {
+            if (await transaction()) return true;
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Transfer dibatalkan: melewati batas waktu. Saldo tidak berubah.");
+            return false;
+        }
+        catch (InsufficientBalanceException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Input ditolak: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+ 
+        Console.WriteLine("Transaksi gagal.");
+        return false;
+    }
+
 
     private static Account? PickAccount(IReadOnlyList<Account> accounts, Bank bank)
     {
